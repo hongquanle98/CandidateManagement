@@ -1,0 +1,41 @@
+﻿@model ApplyDetailListViewModel
+@{
+    ViewData["Title"] = "Apply Detail List";
+}
+
+<h3>Candidate Apply Detail List</h3>
+
+@await Html.PartialAsync("_CandidateInfoPartial", Model.Candidate)
+<div class="my-2 w-100"></div>
+<div class="card">
+    <div class="card-header bg-info text-white">Apply Detail History</div>
+    <div class="card-body">      
+
+        <table class="table table-bordered table-hover w-100 table-sm" id="candidateApplyDetailListTable">
+            <thead>
+                <tr>
+                    <th scope="col">Apply Date</th>
+                    <th scope="col">Expected Salary</th>
+                    <th scope="col">Worked Time</th>
+                    <th scope="col">CV</th>
+                    <th scope="col">Interview</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var applyDetail in Model.ApplyDetails)
+                {
+                <tr>
+                    <td>@FormatHelper.FormatDate(applyDetail.ApplyDate)</td>
+                    <td>@FormatHelper.FormatCurrency(applyDetail.ExpectedSalary)</td>
+                    <td>@applyDetail.WorkedTime năm</td>
+                    @await Html.PartialAsync("_ApplyDetailStatusPartial", new ApplyDetailCVViewModel() { Candidate = Model.Candidate, ApplyDetail = applyDetail})
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+}
+

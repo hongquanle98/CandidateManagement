@@ -1,0 +1,184 @@
+﻿@model ApplyDetailCVViewModel
+@inject IApplyDetailAbilityRepository applyDetailAbilityRepository
+@inject IApplyDetailRepository applyDetailRepository
+@inject IApplyPositionAbilityRepository applyPositionAbilityRepository
+@inject IRequiredAbilityRepository requiredAbilityRepository
+@inject IInterviewScheduleRepository interviewScheduleRepository
+
+@{
+    var applyDetailAbilityList = applyDetailAbilityRepository.GetApplyDetailAbility(Model.ApplyDetail.ApplyDetailId);
+    var applyPositionAbilityList = applyPositionAbilityRepository.GetApplyPositionAbilities(Model.ApplyDetail.Requirement.ApplyPosition.ApplyPositionId);
+    var requiredAbilityList = requiredAbilityRepository.GetRequiredAbilities(Model.ApplyDetail.Requirement.RequirementId);
+    int applyDetailAmount = applyDetailRepository.GetApplyDetailsByRequirementId(Model.ApplyDetail.Requirement.RequirementId).Count();
+    string avatarPath = FormatHelper.FormatCandidateAvatar(Model.Candidate.AvatarPath);
+    bool isExpired = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.ApplyDetail.Requirement.RecruitTo) == 0 ? true : false;
+    string timeSpanColorClass = isExpired ? "text-muted" : string.Empty;
+    string textColorClass = string.Empty;
+    string backgroundColorClass = string.Empty;
+    if (!Model.ApplyDetail.IsCvpass.HasValue)
+    {
+        textColorClass = "text-info";
+        backgroundColorClass = "bg-info";
+    }
+    else
+    {
+        textColorClass = Model.ApplyDetail.IsCvpass.Value ? "text-success" : "text-danger";
+        backgroundColorClass = Model.ApplyDetail.IsCvpass.Value ? "bg-success" : "bg-danger";
+    }
+}
+
+<div id="applyDetailCVModal@(Model.ApplyDetail.ApplyDetailId)" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>CV ứng viên tải lên: <a href="@(!String.IsNullOrEmpty(Model.ApplyDetail.CvfilePath) ? "~/candidate/cv/" + Model.ApplyDetail.CvfilePath : null)" target="_blank">@(!String.IsNullOrEmpty(Model.ApplyDetail.CvfilePath) ? Model.ApplyDetail.CvfilePath.Substring(Model.ApplyDetail.CvfilePath.IndexOf("_") + 1) : "null")</a></span>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div>
+                <div class="container my-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <img class="p-2 ml-3" height="150" src="@avatarPath" asp-append-version="true" />
+                        </div>
+                        <div class="col-md-8 my-auto">
+                            <h3 class="@textColorClass">@Model.Candidate.FullName</h3>
+                            <span class="text-muted">@Model.ApplyDetail.Requirement.Title</span>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-md-3 border-right">
+                            <h5 class="@textColorClass">Information</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="@textColorClass fas fa-user"></i> @FormatHelper.FormatGender(Model.Candidate.Gender)</li>
+                                <li><i class="@textColorClass fas fa-calendar-alt"></i> @FormatHelper.FormatDate(Model.Candidate.DateOfBirth)</li>
+                                <li><i class="@textColorClass fas fa-address-card"></i> @Model.Candidate.PlaceOfBirth</li>
+                                <li><i class="@textColorClass fas fa-phone-alt"></i> @Model.Candidate.Telephone</li>
+                                <li class="text-truncate"><i class="@textColorClass fas fa-envelope"></i> @Model.Candidate.Email</li>
+                                <li><i class="@textColorClass fas fa-map-marker-alt"></i> @Model.Candidate.Address</li>
+                            </ul>
+                            <hr />
+                            <h5 class="@textColorClass">Ability</h5>
+                            <ul class="list-unstyled">
+                                @foreach (var applyDetailAbility in applyDetailAbilityList)
+                                {
+                                    <li>
+                                        <p class="mb-0">@applyDetailAbility.Ability.AbilityName</p>
+                                        <div class="progress" style="height: 15px;">
+                                            <div class="progress-bar @backgroundColorClass" role="progressbar" style="width: @(applyDetailAbility.Point * 10)%;">@applyDetailAbility.Point</div>
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="col-md-6 border-right">
+                            <h5 class="@textColorClass">Requirement</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Description</h6>
+                                    @Model.ApplyDetail.Requirement.Description
+                                </li>
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Require Description</h6>
+                                    @Model.ApplyDetail.Requirement.RequireDescription
+                                </li>
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Work Place</h6>
+                                    @Model.ApplyDetail.Requirement.WorkPlace
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="@textColorClass"></h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Recruit Time</h6>
+                                    <p class="mb-0">@FormatHelper.FormatDate(Model.ApplyDetail.Requirement.RecruitFrom) - @FormatHelper.FormatDate(Model.ApplyDetail.Requirement.RecruitTo)</p>
+                                    <p class="mb-0 @timeSpanColorClass">(@ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.ApplyDetail.Requirement.RecruitTo) day left)</p>
+                                </li>
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Position</h6>
+                                    <p class="mb-0">@Model.ApplyDetail.Requirement.ApplyPosition.ApplyPositionName</p>
+                                    @*<ul class="list-unstyled">
+                                            @foreach (var applyPositionAbility in applyPositionAbilityList)
+                                            {
+                                                <li>
+                                                    <p class="mb-0">@applyPositionAbility.Ability.AbilityName</p>
+                                                </li>
+                                            }
+                                        </ul>*@
+                                </li>
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Language</h6>
+                                    @Model.ApplyDetail.Requirement.Language
+                                </li>
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Recruit Amount</h6>
+                                    @Model.ApplyDetail.Requirement.RecruitAmount (@applyDetailAmount apply)
+                                </li>
+                            </ul>
+                            <hr />
+                            <h5 class="@textColorClass">Require Ability</h5>
+                            <ul class="list-unstyled">
+                                @foreach (var requiredAbility in requiredAbilityList)
+                                {
+                                    <li>
+                                        <p class="mb-0">@requiredAbility.Ability.AbilityName</p>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @{
+                    if (Model.ApplyDetail.IsCvpass == null)
+                    {
+                        <div>
+                            <p class="badge badge-info d-block mb-1">Pending</p>
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateCVStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="pass" method="post">
+                                <a class="text-success font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
+                            </form>
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateCVStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="fail" method="post">
+                                <a class="text-danger font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
+                            </form>
+                        </div>
+                    }
+                    if (Model.ApplyDetail.IsCvpass == true)
+                    {
+                        <div>
+                            <p class="badge badge-success d-block mb-1">Passed</p>
+                            @if (!interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).Any())
+                            {
+                                <form class="d-inline" asp-controller="Admin" asp-action="UpdateCVStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="fail" method="post">
+                                    <a class="text-danger font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
+                                </form>
+                                <form class="d-inline" asp-controller="Admin" asp-action="UpdateCVStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="null" method="post">
+                                    <a class="text-info font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
+                                </form>
+                            }
+                        </div>
+
+                    }
+                    if (Model.ApplyDetail.IsCvpass == false)
+                    {
+
+                        <div>
+                            <p class="badge badge-danger d-block mb-1">Failed</p>
+                            @if (!interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).Any())
+                            {
+                                <form class="d-inline" asp-controller="Admin" asp-action="UpdateCVStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="pass" method="post">
+                                    <a class="text-success font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
+                                </form>
+                                <form class="d-inline" asp-controller="Admin" asp-action="UpdateCVStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="null" method="post">
+                                    <a class="text-info font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
+                                </form>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

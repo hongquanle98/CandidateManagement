@@ -1,0 +1,29 @@
+﻿@model Candidate
+@{
+    var avatarPath = FormatHelper.FormatCandidateAvatar(Model.AvatarPath);
+}
+
+<div class="card">
+    <div class="card-header bg-info text-white">Candidate Info</div>
+    <div class="card-body">
+        <div class="row">
+            <img class="mh-100 col-md-2" src="@avatarPath" asp-append-version="true" />
+            <div class="col-md-8 my-auto row">
+                <div class="col-md-4">
+                    <p>Full Name: <strong>@Model.FullName</strong></p>
+                    <p>Email: @Model.Email</p>
+                </div>
+                <div class="col-md-4">
+                    <p>Phone: @Model.Telephone</p>
+                    <p>University: @Model.CandidateBackground.College.CollegeName</p>
+                </div>
+                <div class="col-md-4">
+                    <p>Gender: @FormatHelper.FormatGender(Model.Gender)</p>
+                    <p>
+                        Age: @(Convert.ToInt32(System.DateTime.Now.Year) - Convert.ToInt32(Model.DateOfBirth.Year))
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

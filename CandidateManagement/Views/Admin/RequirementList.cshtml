@@ -1,0 +1,58 @@
+﻿@model RequirementListViewModel
+@{
+    ViewData["Title"] = "Requirement List";
+}
+
+<div class="card">
+    <div class="card-header bg-info text-white">Requirement List</div>
+    <div class="card-body">
+        <div class="card-text">
+            <a class="btn btn-sm btn-outline-primary mb-2" asp-controller="Admin" asp-action="AddRequirement" target="_blank">Add requirement</a>
+
+            <table class="table table-bordered table-hover w-100 table-sm" id="requirementListTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Work Place</th>
+                        <th scope="col">Language</th>
+                        <th scope="col">Recruit Time</th>
+                        <th scope="col">Apply Position</th>
+                        <th scope="col">Recruit Amount</th>
+                        <th scope="col">View Count</th>
+                        <th scope="col">CreateTime</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var requirement in Model.Requirements)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-controller="Home" asp-action="RequirementDetail" asp-route-id="@requirement.RequirementId" target="_blank">@requirement.Title</a>
+                            </td>
+                            <td>@requirement.WorkPlace</td>
+                            <td>@requirement.Language</td>
+                            <td class="text-nowrap">@FormatHelper.FormatDate(requirement.RecruitFrom) - @FormatHelper.FormatDate(requirement.RecruitTo)</td>
+                            <td>@requirement.ApplyPosition.ApplyPositionName</td>
+                            <td>@requirement.RecruitAmount</td>
+                            <td>@requirement.ViewCount</td>
+                            <td class="text-nowrap">@FormatHelper.FormatDateTime(requirement.CreateTime)</td>
+                            <td class="text-nowrap">
+                                <a asp-controller="Admin" asp-action="EditRequirement" asp-route-id="@requirement.RequirementId" target="_blank" class="btn btn-link text-info font-weight-bold btn-sm">Edit</a>
+                                <form class="d-inline-block" asp-controller="Admin" asp-action="DeleteRequirement" asp-route-id="@requirement.RequirementId" method="post">
+                                    <button class="btn btn-link text-danger font-weight-bold btn-sm" type="submit" onclick="return confirm('Are you sure?');">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+}
+

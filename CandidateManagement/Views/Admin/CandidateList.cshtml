@@ -1,0 +1,60 @@
+﻿@model CandidateListViewModel
+@inject ICandidateRepository candidateRepository
+@{
+    ViewData["Title"] = "Candidate List";
+}
+
+<div class="card">
+    <div class="card-header bg-info text-white">Candidate List</div>
+    <div class="card-body">
+        <div class="card-text">
+            <table class="table table-bordered table-hover w-100 table-sm" id="candidateListTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Age</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">Identity Number</th>
+                        <th scope="col">Place Of Birth</th>
+                        <th scope="col">Date Of Birth</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">University</th>
+                        <th scope="col">Apply</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">E-mail</th>
+                        @*<th scope="col">Avatar</th>*@
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var candidate in Model.Candidates)
+                    {
+                        var avatarPath = FormatHelper.FormatCandidateAvatar(candidate.AvatarPath);
+                        <tr>
+                            <td class="text-nowrap">
+                                <a asp-controller="Home" asp-action="CandidateById" asp-route-id="@candidate.CandidateId" target="_blank">@candidate.FullName</a>
+                            </td>
+                            <td>@(Convert.ToInt32(System.DateTime.Now.Year) - Convert.ToInt32(candidate.DateOfBirth.Year))</td>
+                            <td>@candidate.Gender</td>
+                            <td>@candidate.IdentityNumber</td>
+                            <td>@candidate.PlaceOfBirth</td>
+                            <td>@candidate.DateOfBirth.ToString("dd/MM/yyyy")</td>
+                            <td>@candidate.Address</td>
+                            <td>@candidate.CandidateBackground.College.CollegeName</td>
+                            <td>
+                                <p class="badge badge-info my-auto d-block">Apply</p>
+                                <a class="text-primary font-weight-bold small mx-auto" target="_blank" asp-controller="Admin" asp-action="CandidateApplyDetailList" asp-route-id="@candidate.CandidateId">List</a>
+                            </td>
+                            <td>@candidate.Telephone</td>
+                            <td>@candidate.Email</td>
+                            @*<td><img class="img-thumbnail w-25" src="@avatarPath" asp-append-version="true" /></td>*@
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+}
+

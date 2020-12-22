@@ -1,0 +1,20 @@
+[
+  {
+    "outputFileName": "wwwroot/js/candidate.min.js",
+    "inputFiles": [
+      "wwwroot/js/candidate.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/ckeditor/ckeditor.min.js",
+    "inputFiles": [
+      "wwwroot/lib/ckeditor/ckeditor.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/ckeditor/adapters/jquery.min.js",
+    "inputFiles": [
+      "wwwroot/lib/ckeditor/adapters/jquery.js"
+    ]
+  }
+]

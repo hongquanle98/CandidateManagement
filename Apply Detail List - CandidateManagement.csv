@@ -1,0 +1,7 @@
+"Apply Date","Candidate Name","Date Of Birth","Identity Number","Expected Salary","Worked Time","CV","Interview"
+"12/12/2020","Nguyen Bao Ngoc","6/11/1998 12:00:00 AM","698741235874","500.000 ₫","2 năm","Pending                              Pass                                           Fail","Invalid CV"
+"15/12/2020","Dang Van Ngu","1/16/1999 12:00:00 AM","159987412547","7.000.000 ₫","1 năm","Passed","Not Evaluate                 16/12/2020"
+"17/08/2020","Dang Van Ngu","1/16/1999 12:00:00 AM","159987412547","4.000.000 ₫","0 năm","Passed                                      Fail                                                       Reset","Pending                 Schedule"
+"17/08/2020","Bui Thi Xuan","2/20/1995 12:00:00 AM","963215874123","8.000.000 ₫","1 năm","Passed                                      Fail                                                       Reset","Pending                 Schedule"
+"27/08/2020","test","8/27/2020 12:00:00 AM","1234567890","0 ₫","2 năm","Passed                                      Fail                                                       Reset","Pending                 Schedule"
+"29/06/2020","Nguyen Bao Ngoc","6/11/1998 12:00:00 AM","698741235874","0 ₫","1 năm","Passed                                      Fail                                                       Reset","Pending                 Schedule"

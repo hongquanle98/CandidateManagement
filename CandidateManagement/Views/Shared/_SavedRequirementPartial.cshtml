@@ -1,0 +1,50 @@
+﻿@model CandidateRequirementViewModel
+
+@inject IRequiredAbilityRepository requiredAbilityRepository
+
+@if (Model.SavedRequirements.Count() == 0)
+{
+    <div class="text-center text-muted m-5">
+        <i class="fas fa-heart fa-4x d-block"></i>
+        <h6 class="font-weight-light">You don't have any saved requirement!</h6>
+    </div>
+}
+else
+{
+    foreach (var requirement in Model.SavedRequirements)
+    {
+        string requiredSalary = "Thương lượng";
+        var requiredSalaryAbility = requiredAbilityRepository.GetRequiredAbilities(requirement.RequirementId).FirstOrDefault(ra => ra.Ability.Note == "Salary");
+        if (requiredSalaryAbility != null)
+        {
+            requiredSalary = requiredSalaryAbility.Ability.AbilityName;
+        }
+        <div class="row border-bottom pb-2 mt-3">
+            <div class="col-md-2 vcenter-item">
+                <img src="@ConstantHelper.Company.Logo" asp-append-version="true" width="80" class="mx-auto d-block" />
+            </div>
+            <div class="col-md-6">
+                <a target="_blank" asp-controller="Home" asp-action="RequirementDetail" asp-route-id="@requirement.RequirementId" class="text-danger d-block">
+                    <h5 class="d-block">@requirement.Title</h5>
+                </a>
+                <p class="pb-1 mb-0">@ConstantHelper.Company.Name</p>
+                <p class="pb-1 mb-0">@requirement.WorkPlace</p>
+                <p>@requiredSalary</p>
+            </div>
+            <div class="col-md-2 text-center my-auto">
+                <h6 class="font-weight-light">Expired time</h6>
+                <h5 class="font-weight-light">@FormatHelper.FormatDate(requirement.RecruitTo)</h5>
+            </div>
+            <div class="col-md-2 text-center my-auto">
+                <div class="apply-requirement-button@(requirement.RequirementId) d-inline-block mr-2">
+                    @await Html.PartialAsync("_ApplyRequirementButtonPartial", new ApplyOrSaveRequirementButtonViewModel { Candidate = Model.Candidate, Requirement = requirement })
+                </div>
+                <button class="text-muted btn btn-sm btn-link d-inline-block"
+                        onclick="saveRequirement(this, @Model.Candidate.CandidateId, @requirement.RequirementId, false, false)">
+                    Delete
+                </button>
+            </div>
+        </div>
+    }
+    <p class="mb-0 mt-3">Note: You can't see requirement which was expired or deleted.</p>
+}

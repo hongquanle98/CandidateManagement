@@ -1,0 +1,49 @@
+﻿@model CandidateRequirementViewModel
+
+@inject IRequiredAbilityRepository requiredAbilityRepository
+@inject IApplyDetailRepository applyDetailRepository
+
+@if (Model.AppliedRequirements.Count() == 0)
+{
+    <div class="text-center text-muted m-5">
+        <i class="fas fa-paper-plane fa-4x d-block"></i>
+        <h6 class="font-weight-light">You don't have any applied requirement!</h6>
+    </div>
+}
+else
+{
+    foreach (var requirement in Model.AppliedRequirements)
+    {
+        string requiredSalary = "Thương lượng";
+        var requiredSalaryAbility = requiredAbilityRepository.GetRequiredAbilities(requirement.RequirementId).FirstOrDefault(ra => ra.Ability.Note == "Salary");
+        if (requiredSalaryAbility != null)
+        {
+            requiredSalary = requiredSalaryAbility.Ability.AbilityName;
+        }
+        var applyDetail = requirement.ApplyDetail.FirstOrDefault(ad => ad.RequirementId == requirement.RequirementId);
+        string applyDetailStatus = applyDetailRepository.GetApplyDetailStatus(applyDetail.ApplyDetailId);
+        <div class="row border-bottom pb-2 mt-3">
+            <div class="col-md-2 vcenter-item">
+                <img src="@ConstantHelper.Company.Logo" asp-append-version="true" width="80" class="mx-auto d-block" />
+            </div>
+            <div class="col-md-6">
+                <a target="_blank" asp-controller="Home" asp-action="RequirementDetail" asp-route-id="@requirement.RequirementId" class="text-grey d-block">
+                    <h5 class="d-block">@requirement.Title</h5>
+                </a>
+                <p class="pb-1 mb-0">@ConstantHelper.Company.Name</p>
+                <p class="pb-1 mb-0">@requirement.WorkPlace</p>
+                <p>@requiredSalary</p>
+            </div>
+            <div class="col-md-2 text-center my-auto">
+                <h6 class="font-weight-light">Apply date</h6>
+                <h5 class="font-weight-light">@FormatHelper.FormatDate(applyDetail.ApplyDate)</h5>
+            </div>
+            <div class="col-md-2 text-center my-auto">
+                <h5 class="@FunctionHelper.GetColorClassFromApplyDetailStatus(applyDetailStatus)">
+                    @FunctionHelper.GetStatusFromApplyDetailStatus(applyDetailStatus)
+                </h5>
+            </div>
+        </div>
+    }
+    <p class="mb-0 mt-3">Note: You can't see requirement which was expired or deleted.</p>
+}

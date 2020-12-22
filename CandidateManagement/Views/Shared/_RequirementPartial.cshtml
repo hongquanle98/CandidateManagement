@@ -1,0 +1,52 @@
+﻿@model Requirement
+
+@inject IRequiredAbilityRepository requiredAbilityRepository
+@inject ICandidateRepository candidateRepository
+@inject IApplyDetailRepository applyDetailRepository
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    int recruitTime = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.RecruitTo);
+    bool isSignedIn = SignInManager.IsSignedIn(User);
+    bool isAdmin = isSignedIn && User.IsInRole("Admin");
+
+    var candidateId = 0;
+    if (isSignedIn && !isAdmin)
+    {
+        candidateId = candidateRepository.GetCandidate(UserManager.GetUserId(User)).CandidateId;
+    }
+    bool wasAppliedRequirement = isSignedIn && !isAdmin && applyDetailRepository.GetApplyDetailsByCandidateId(candidateId).Where(ad => ad.RequirementId == Model.RequirementId).Any();
+    string requiredSalary = "Thương lượng";
+    var requiredSalaryAbility = requiredAbilityRepository.GetRequiredAbilities(Model.RequirementId).FirstOrDefault(ra => ra.Ability.Note == "Salary");
+    if (requiredSalaryAbility != null)
+    {
+        requiredSalary = requiredSalaryAbility.Ability.AbilityName;
+    }
+}
+
+<div class="requirement border border-cyan mb-3">
+    <div class="row mx-0">
+        <div class="col-md-2 border-right border-cyan vcenter-item bg-white">
+            <img src="@ConstantHelper.Company.Logo" asp-append-version="true" width="80" class="mx-auto d-block" />
+        </div>
+        <div class="col-md-10 bg-light-cyan">
+            <div class="row @(wasAppliedRequirement ? "text-muted" : "")">
+                <div class="col-md-9">
+                    <a target="_blank" asp-controller="Home" asp-action="RequirementDetail" asp-route-id="@Model.RequirementId" class="d-block text-danger @(wasAppliedRequirement ? "text-muted" : "")"><h5 class="mt-2">@Model.Title</h5></a>
+                    <p class="pb-1 mb-0 font-weight-bold">@ConstantHelper.Company.Name</p>
+                    <p class="pb-1">@Model.WorkPlace</p>
+                    <p class="pb-1">@recruitTime day for apply</p>
+                </div>
+                <div class="col-md-3 bg-light-cyan">
+                    <div class="text-right mt-3">
+                        <h7 class="text-warning"><b>@requiredSalary</b></h7>
+                    </div>
+                    <div class="save-requirement-button@(Model.RequirementId) d-flex align-items-end flex-column h-100">
+                        @await Html.PartialAsync("_SaveRequirementButtonPartial", new ApplyOrSaveRequirementButtonViewModel { Candidate = candidateRepository.GetCandidate(candidateId), Requirement = Model, IsRequirementDetail = false })
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

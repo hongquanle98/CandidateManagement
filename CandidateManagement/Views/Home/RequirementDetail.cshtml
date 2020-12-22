@@ -1,0 +1,245 @@
+﻿@model RequirementDetailViewModel
+
+@inject IRequiredAbilityRepository requiredAbilityRepository
+@inject IApplyPositionAbilityRepository applyPositionAbilityRepository
+@inject IApplyDetailRepository applyDetailRepository
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    ViewData["Title"] = "Requirement Detail";
+    var companyImageList = ConstantHelper.Company.Images;
+    var companyVideoList = ConstantHelper.Company.Videos;
+    var bannerList = ConstantHelper.Company.Banners.ToArray();
+    int recruitTime = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.Requirement.RecruitTo);
+    bool isExpired = recruitTime == 0 ? true : false;
+    var requiredAbilityList = requiredAbilityRepository.GetRequiredAbilities(Model.Requirement.RequirementId).Select(ra => ra.Ability);
+    var applyPositionAbilityList = applyPositionAbilityRepository.GetApplyPositionAbilities(Model.Requirement.ApplyPositionId).Select(apa => apa.Ability);
+    var advantageAbilityList = applyPositionAbilityList.Where(a => !requiredAbilityList.Select(a1 => a1.AbilityId).Contains(a.AbilityId));
+    var otherRequirementList = Model.OtherRequirement.Take(8).ToArray();
+
+    string requiredSalary = "Thương lượng";
+    string requiredWorkTime = "Không yêu cầu kinh nghiệm";
+    var requiredSalaryAbility = requiredAbilityRepository.GetRequiredAbilities(Model.Requirement.RequirementId).FirstOrDefault(ra => ra.Ability.Note == "Salary");
+    var requiredWorkTimeAbility = requiredAbilityRepository.GetRequiredAbilities(Model.Requirement.RequirementId).FirstOrDefault(ra => ra.Ability.Note == "WorkedTime");
+    if (requiredSalaryAbility != null)
+    {
+        requiredSalary = requiredSalaryAbility.Ability.AbilityName;
+    }
+    if (requiredWorkTimeAbility != null)
+    {
+        requiredWorkTime = requiredWorkTimeAbility.Ability.AbilityName;
+    }
+}
+
+<div class="bg-white requirement-detail">
+    <div class="row mx-5">
+        <div class="col-md-3 vcenter-item">
+            <img src="@ConstantHelper.Company.Logo" asp-append-version="true" height="120" class="mx-auto d-block" />
+        </div>
+        <div class="col-md-7 mb-3">
+            <h4 class="mt-2">@Model.Requirement.Title</h4>
+            <h7>@ConstantHelper.Company.Name</h7>
+            <p class="pb-1 mb-0">Work place: @Model.Requirement.WorkPlace</p>
+            <p class="pb-1 mb-0 text-warning">@requiredSalary</p>
+            <p class="pb-1 mb-1 text-muted">@Model.Requirement.ViewCount view - @recruitTime day for apply@(isExpired ? "(expired)" : "")</p>
+        </div>
+        <div class="col-md-2 my-auto">
+            <div class="apply-requirement-button">
+                @await Html.PartialAsync("_ApplyRequirementButtonPartial", new ApplyOrSaveRequirementButtonViewModel { Candidate = Model.Candidate, Requirement = Model.Requirement})
+            </div>
+            <div class="save-requirement-button text-nowrap">
+                @await Html.PartialAsync("_SaveRequirementButtonPartial", new ApplyOrSaveRequirementButtonViewModel { Candidate = Model.Candidate, Requirement = Model.Requirement, IsRequirementDetail = true })
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <ul class="nav nav-tabs mt-3" id="requirementDetailTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="information-tab" data-toggle="tab" href="#information" role="tab" aria-controls="information" aria-selected="true">Information</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="company-tab" data-toggle="tab" href="#company" role="tab" aria-controls="company" aria-selected="false">Company</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="otherJob-tab" data-toggle="tab" href="#otherJob" role="tab" aria-controls="otherJob" aria-selected="false">Other Job</a>
+        </li>
+    </ul>
+    <div class="tab-content bg-white" id="requirementDetailTabContent">
+        <div class="tab-pane fade show active p-3" id="information" role="tabpanel" aria-labelledby="information-tab">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Description</h5>
+                    <p>@Model.Requirement.Description</p>
+                    <h5>Require Description</h5>
+                    <p>@Model.Requirement.RequireDescription</p>
+                    <h5>Work Place</h5>
+                    <p><i class="fas fa-map-marker-alt"></i> @Model.Requirement.WorkPlace</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="border border-info bg-light-cyan">
+                        <div class="row mt-3 mx-3 border-bottom">
+                            <div class="col-md-3 text-center">
+                                <i class="far fa-calendar-alt fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Recruit Time</p>
+                                <p>@FormatHelper.FormatDate(Model.Requirement.RecruitFrom)</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3 mx-3 border-bottom">
+                            <div class="col-md-3 text-center">
+                                <i class="fas fa-briefcase fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Position</p>
+                                <p>@Model.Requirement.ApplyPosition.ApplyPositionName</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3 mx-3 border-bottom">
+                            <div class="col-md-3 text-center">
+                                <i class="fas fa-flag fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Required Ability</p>
+                                <p>@string.Join(", ", requiredAbilityList.Select(a => a.AbilityName))</p>
+                                <p class="text-uppercase text-muted mb-1">Advantage Ability</p>
+                                <p>@string.Join(", ", advantageAbilityList.Select(a => a.AbilityName))</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3 mx-3 border-bottom">
+                            <div class="col-md-3 text-center">
+                                <i class="fas fa-briefcase fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Required Work Time</p>
+                                <p>@requiredWorkTime</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3 mx-3 border-bottom">
+                            <div class="col-md-3 text-center">
+                                <i class="fas fa-user fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Recruit Amount</p>
+                                <p>@Model.Requirement.RecruitAmount employee</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3 mx-3">
+                            <div class="col-md-3 text-center">
+                                <i class="fas fa-language fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Language</p>
+                                <p>@Model.Requirement.Language</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade p-3" id="company" role="tabpanel" aria-labelledby="company-tab">
+            <div class="row">
+                <div class="col-md-3">
+                    <div id="carouselIndicators" class="carousel slide" data-ride="carousel">
+                        <ol class="carousel-indicators">
+                            @{
+                                int index = 0;
+                                for (; index < companyImageList.Length; index++)
+                                {
+                                    <li data-target="#carouselIndicators" data-slide-to="@index" class="@(index == 0 ? "active" : "")"></li>
+                                }
+                                for (; index < companyImageList.Length + companyVideoList.Length; index++)
+                                {
+                                    <li data-target="#carouselIndicators" data-slide-to="@index" class="@(index == 0 ? "active" : "")"></li>
+                                }
+                            }
+                        </ol>
+                        <div class="carousel-inner">
+                            @for (int i = 0; i < companyImageList.Length; i++)
+                            {
+                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                    <img class="d-block w-100" src="@ConstantHelper.Company.Images[i]" asp-append-version="true">
+                                </div>
+                            }
+                            @for (int i = 0; i < companyVideoList.Length; i++)
+                            {
+                                <div class="carousel-item">
+                                    @Html.Raw(ConstantHelper.Company.Videos[i])
+                                </div>
+                            }
+                        </div>
+                        <a class="carousel-control-prev bg-light" href="#carouselIndicators" role="button" data-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next bg-light" href="#carouselIndicators" role="button" data-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <p>Follow the first mission is to support VinGroup's member companies in improving their customers' experience with more added values through integrating advanced technologies to optimize the marketing activities and service management systems, VinID now is looking for top talents to join our team, offer good jobs with attractive salary!</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="border border-info bg-light-cyan">
+                        <div class="row mt-3 mx-3 border-bottom">
+                            <div class="col-md-3 text-center">
+                                <i class="fas fa-map-marker-alt fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Location</p>
+                                <p>@ConstantHelper.Company.Location</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3 mx-3 border-bottom">
+                            <div class="col-md-3 text-center">
+                                <i class="fas fa-users fa-3x"></i>
+                            </div>
+                            <div class="col-md-9">
+                                <p class="text-uppercase text-muted mb-1">Position</p>
+                                <p>@ConstantHelper.Company.Size employee</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="tab-pane fade p-3" id="otherJob" role="tabpanel" aria-labelledby="otherJob-tab">
+            <div class="row">
+                <div class="col-md-9">
+                    @for (int i = 0; i < otherRequirementList.Length; i++)
+                    {
+                        string otherRequiredSalary = "Thương lượng";
+                        var otherRequiredSalaryAbility = requiredAbilityRepository.GetRequiredAbilities(otherRequirementList[i].RequirementId).FirstOrDefault(ra => ra.Ability.Note == "Salary");
+                        if (otherRequiredSalaryAbility != null)
+                        {
+                            otherRequiredSalary = otherRequiredSalaryAbility.Ability.AbilityName;
+                        }
+                        <div class="mt-3 mx-3 pb-3 @(i != otherRequirementList.Length - 1 ? "border-bottom": "")">
+                            <a target="_blank" asp-controller="Home" asp-action="RequirementDetail" asp-route-id="@otherRequirementList[i].RequirementId" class="text-grey"><h5>@otherRequirementList[i].Title</h5></a>
+                            <span class="border-right pr-3 text-warning">@otherRequiredSalary</span>
+                            <span class="border-right pl-3 pr-3">@otherRequirementList[i].ApplyPosition.ApplyPositionName</span>
+                            <span class="border-right pl-3 pr-3">@otherRequirementList[i].WorkPlace</span>
+                            <span class="pl-3">@otherRequirementList[i].RecruitAmount slot</span>
+                        </div>
+                    }
+                </div>
+                <div class="col-md-3 group-banner">
+                    @Html.Raw(string.Join("", bannerList))
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            showBanner(2);
+        });
+    </script>
+}

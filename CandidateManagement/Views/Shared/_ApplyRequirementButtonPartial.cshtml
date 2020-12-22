@@ -1,0 +1,22 @@
+﻿@model ApplyOrSaveRequirementButtonViewModel
+
+@inject IApplyDetailRepository applyDetailRepository
+@inject ICandidateRepository candidateRepository
+@inject ISavedRequirementRepository savedRequirementRepository
+@inject IRequiredAbilityRepository requiredAbilityRepository
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    int recruitTime = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.Requirement.RecruitTo);
+    bool isSignedIn = SignInManager.IsSignedIn(User);
+    bool isAdmin = isSignedIn && User.IsInRole("Admin");
+    bool wasAppliedRequirement = isSignedIn && !isAdmin && applyDetailRepository.GetApplyDetailsByCandidateId(Model.Candidate.CandidateId).Where(ad => ad.RequirementId == Model.Requirement.RequirementId).Any();
+    bool isExpired = recruitTime == 0 ? true : false;
+}
+
+<button class="btn btn-outline-warning btn-sm d-block w-100 mb-2" 
+        title="@(isAdmin ? "You are signed in with Admin role" : (wasAppliedRequirement ? "You have already applied this requirement" : ""))" 
+        onclick="ShowApplyRequirementDetail(this, @Model.Requirement.RequirementId, @Model.Candidate.CandidateId);" 
+        @(isExpired || isAdmin || wasAppliedRequirement || !isSignedIn ? "disabled" : "")>
+    @(wasAppliedRequirement ? "Applied" : "Apply")
+</button>

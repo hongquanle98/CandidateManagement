@@ -1,0 +1,33 @@
+﻿@model ApplyOrSaveRequirementButtonViewModel
+
+@inject IApplyDetailRepository applyDetailRepository
+@inject ICandidateRepository candidateRepository
+@inject ISavedRequirementRepository savedRequirementRepository
+@inject IRequiredAbilityRepository requiredAbilityRepository
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+@{
+    bool isSignedIn = SignInManager.IsSignedIn(User);
+    bool isAdmin = isSignedIn && User.IsInRole("Admin");
+    bool wasAppliedRequirement = isSignedIn && !isAdmin && applyDetailRepository.GetApplyDetailsByCandidateId(Model.Candidate.CandidateId).Where(ad => ad.RequirementId == Model.Requirement.RequirementId).Any();
+    int candidateId = 0;
+    bool wasSavedRequirement = false;
+    if (isSignedIn && !isAdmin)
+    {
+        candidateId = candidateRepository.GetCandidate(UserManager.GetUserId(User)).CandidateId;
+    }
+    var savedRequirement = savedRequirementRepository.GetSavedRequirement(candidateId, Model.Requirement.RequirementId);
+    if (savedRequirement != null)
+    {
+        wasSavedRequirement = true;
+    }
+    bool isSaving = !wasSavedRequirement;
+}
+
+<button class="@(Model.IsRequirementDetail ? "btn btn-outline-warning btn-sm d-block w-100" : "btn btn-link mt-auto mb-5 p-0 text-warning")"
+        title="@(isAdmin ? "You are signed in with Admin role" : (isSaving ? "Save this requirement" : "Unsave this requirement"))"
+        onclick="saveRequirement(this, @candidateId, @Model.Requirement.RequirementId, @(isSaving ? "true" : "false"), @(Model.IsRequirementDetail ? "true" : "false"))"
+        @(!isSignedIn || isAdmin ? "disabled" : "")>
+    <i class="@(wasSavedRequirement ? "fas fa-heart" : (Model.IsRequirementDetail ? "far fa-heart" : "far fa-heart text-muted"))"></i>
+    @(Model.IsRequirementDetail ? (isSaving ? "Save" : "Unsave") : "")
+</button>

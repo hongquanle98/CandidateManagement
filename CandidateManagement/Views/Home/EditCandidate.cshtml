@@ -1,0 +1,246 @@
+﻿@model CandidateViewModel
+@inject IInterviewScheduleRepository interviewScheduleRepository
+@inject ICollegeRepository collegeRepository
+@inject IApplyPositionRepository applyPositionRepository
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    ViewData["Title"] = "EditCandidate";
+    var avatarPath = FormatHelper.FormatCandidateAvatar(Model.Candidate.AvatarPath);
+}
+
+<h3>Edit Candidate</h3>
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form enctype="multipart/form-data" method="post" id="editCandidateForm">
+    <div class="card-group">
+        <div class="card">
+            <div class="card-header bg-info text-white">Candidate Info</div>
+            <div class="card-body">
+                <input asp-for="Candidate.CandidateId" type="hidden">
+                <input asp-for="Candidate.UserId" type="hidden">
+                <input asp-for="Candidate.AvatarPath" type="hidden">
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.FullName">Full Name</label>
+                        <input asp-for="Candidate.FullName" class="form-control form-control-sm" value="@Model.Candidate.FullName" required>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label asp-for="Candidate.Gender">Gender</label>
+                        <select asp-for="Candidate.Gender" class="form-control form-control-sm">
+                            <option value="F" selected="@((Model.Candidate.Gender == "F") ? "selected" : null)">Female</option>
+                            <option value="M" selected="@((Model.Candidate.Gender == "M") ? "selected" : null)">Male</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.DateOfBirth">Date Of Birth</label>
+                        <input asp-for="Candidate.DateOfBirth" class="form-control form-control-sm" type="date" value="@Model.Candidate.DateOfBirth.ToString("yyyy-MM-dd")" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.IdentityNumber">Identity Number</label>
+                        <input asp-for="Candidate.IdentityNumber" class="form-control form-control-sm" value="@Model.Candidate.IdentityNumber" required type="number" maxlength="12">
+                    </div>
+                    <div class="form-group col-md-5">
+                        <label asp-for="Candidate.PlaceOfBirth">Place Of Birth</label>
+                        <input asp-for="Candidate.PlaceOfBirth" class="form-control form-control-sm" value="@Model.Candidate.PlaceOfBirth" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label asp-for="Candidate.Email">Email</label>
+                        <input asp-for="Candidate.Email" class="form-control form-control-sm" value="@Model.Candidate.Email" required type="email">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.Telephone">Telephone</label>
+                        <input asp-for="Candidate.Telephone" class="form-control form-control-sm" value="@Model.Candidate.Telephone" required type="number" maxlength="10">
+                    </div>
+                    <div class="form-group col-md-5">
+                        <label asp-for="Candidate.Address">Address</label>
+                        <input asp-for="Candidate.Address" class="form-control form-control-sm" value="@Model.Candidate.Address" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-100 my-1"></div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">Candidate Background</div>
+            <div class="card-body">
+                <input asp-for="Candidate.CandidateBackground.CandidateId" type="hidden">
+                @*<input asp-for="Candidate.CandidateBackground.College" type="hidden">*@
+                @*<input asp-for="Candidate.CandidateBackground.CvfilePath" type="hidden">*@
+                <div class="form-row">
+                    <div class="form-group col-md-5">
+                        <label asp-for="Candidate.CandidateBackground.CollegeId">University</label>
+                        <select asp-for="Candidate.CandidateBackground.CollegeId" class="form-control form-control-sm">
+                            @foreach (var college in collegeRepository.GetColleges())
+                            {
+                                <option value="@college.CollegeId" selected="@(college.CollegeId == Model.Candidate.CandidateBackground.CollegeId ? "selected" : null)">@college.CollegeName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group col-md-5">
+                        <label asp-for="Candidate.CandidateBackground.Major">Major</label>
+                        <input asp-for="Candidate.CandidateBackground.Major" class="form-control form-control-sm" value="@Model.Candidate.CandidateBackground.Major" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.CandidateBackground.CurrentCollegeYear">Year</label>
+                        <input asp-for="Candidate.CandidateBackground.CurrentCollegeYear" class="form-control form-control-sm" type="number" min="1" max="10" required value="@Model.Candidate.CandidateBackground.CurrentCollegeYear">
+                    </div>
+                </div>
+                <div class="form-row">
+                    @*<div class="form-group col-md-4">
+                            <label asp-for="Candidate.CandidateBackground.GraduateDate">Graduate Date</label>
+                            <input asp-for="Candidate.CandidateBackground.GraduateDate" class="form-control form-control-sm" type="date" required value="@Model.Candidate.CandidateBackground.GraduateDate.ToString("yyyy-MM-dd")">
+                        </div>*@
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.CandidateBackground.CurrentGpa">GPA</label>
+                        <input asp-for="Candidate.CandidateBackground.CurrentGpa" class="form-control form-control-sm" type="number" required min="1" max="10" value="@Model.Candidate.CandidateBackground.CurrentGpa">
+                    </div>
+                </div>
+                <hr />
+                @*<div class="form-row">
+                        <div class="col-md-4 align-self-center">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" asp-for="Candidate.CandidateBackground.UsedToWork" id="cbxWasIntern" checked="@(Model.Candidate.CandidateBackground.UsedToWork == true ? "checked" : null)">
+                                <label class="form-check-label" for="cbxWasIntern">Used to Work</label>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-8">
+                            <label asp-for="Candidate.CandidateBackground.CompanyName">Company Name</label>
+                            <input asp-for="Candidate.CandidateBackground.CompanyName" class="form-control form-control-sm workExperience" required readonly="@(Model.Candidate.CandidateBackground.UsedToWork == false ? "readonly" : null)" value="@Model.Candidate.CandidateBackground.CompanyName">
+                        </div>
+                    </div>*@
+                @*@if (Model.Candidate.CandidateBackground.FromDate.HasValue && Model.Candidate.CandidateBackground.ToDate.HasValue)
+                    {
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="Candidate.CandidateBackground.FromDate">From Date</label>
+                                <input asp-for="Candidate.CandidateBackground.FromDate" class="form-control form-control-sm workExperience" required type="date" readonly="@(Model.Candidate.CandidateBackground.UsedToWork == false ? "readonly" : null)" value="@Model.Candidate.CandidateBackground.FromDate.Value.ToString("yyyy-MM-dd")">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="Candidate.CandidateBackground.ToDate">ToDate</label>
+                                <input asp-for="Candidate.CandidateBackground.ToDate" class="form-control form-control-sm workExperience" required type="date" readonly="@(Model.Candidate.CandidateBackground.UsedToWork == false ? "readonly" : null)" value="@Model.Candidate.CandidateBackground.ToDate.Value.ToString("yyyy-MM-dd")">
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="Candidate.CandidateBackground.FromDate">From Date</label>
+                                <input asp-for="Candidate.CandidateBackground.FromDate" class="form-control form-control-sm workExperience" required type="date" readonly="@(Model.Candidate.CandidateBackground.UsedToWork == false ? "readonly" : null)">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="Candidate.CandidateBackground.ToDate">ToDate</label>
+                                <input asp-for="Candidate.CandidateBackground.ToDate" class="form-control form-control-sm workExperience" required type="date" readonly="@(Model.Candidate.CandidateBackground.UsedToWork == false ? "readonly" : null)">
+                            </div>
+                        </div>
+                    }*@
+
+            </div>
+        </div>
+        <div class="mx-1"></div>
+        <div class="card">
+            <div class="card-header bg-info text-white">Apply Detail</div>
+            <div class="card-body">
+                @*<input asp-for="Candidate.ApplyDetail.CandidateId" type="hidden">
+                    <input asp-for="Candidate.ApplyDetail.IsCvpass" type="hidden">
+                    <input asp-for="Candidate.ApplyDetail.IsInterviewPass" type="hidden">
+                    <input asp-for="Candidate.ApplyDetail.IsInterviewPass" type="hidden">
+                    <input asp-for="Candidate.ApplyDetail.CandidateNo" type="hidden">
+                    <input asp-for="Candidate.ApplyDetail.CandidateStatus" type="hidden">*@
+
+                @*<input asp-for="Candidate.ApplyDetail.ApplyPosition" type="hidden">
+                    <input asp-for="Candidate.ApplyDetail.ApplyProgrammingLanguage" type="hidden">
+                    <input asp-for="Candidate.ApplyDetail.JobSource" type="hidden">*@
+                @*<div class="form-row">
+                        <div class="form-group col-md-3">
+                            <label asp-for="Candidate.ApplyDetail.ApplyPositionId">Apply Position</label>
+                            <select asp-for="Candidate.ApplyDetail.ApplyPositionId" class="form-control form-control-sm">
+                                @foreach (var position in applyPositionRepository.GetApplyPositions())
+                                {
+                                    <option value="@position.ApplyPositionId" selected="@(position.ApplyPositionId == Model.Candidate.ApplyDetail.ApplyPositionId ? "selected" : null)">@position.ApplyPositionName</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group col-md-5">
+                            <label asp-for="Candidate.ApplyDetail.ApplyDate">Apply Date</label>
+                            <input asp-for="Candidate.ApplyDetail.ApplyDate" class="form-control form-control-sm" type="date" id="applyDate" required value="@Model.Candidate.ApplyDetail.ApplyDate.ToString("yyyy-MM-dd")" readonly="@(User.IsInRole("Admin") ? null : "readonly")">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="Candidate.ApplyDetail.ApplyProgrammingLanguageId">Program Language</label>
+                            <select asp-for="Candidate.ApplyDetail.ApplyProgrammingLanguageId" class="form-control form-control-sm">
+                                @foreach (var proLang in programmingLanguageRepository.GetProgammingLanguages())
+                                {
+                                    <option value="@proLang.ProgrammingLanguageId" selected="@(proLang.ProgrammingLanguageId == Model.Candidate.ApplyDetail.ApplyProgrammingLanguageId ? "selected" : null)">@proLang.ProgrammingLanguageName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>*@
+
+                @*<div class="form-row">
+                        <div class="form-group col-md-3">
+                            <label asp-for="Candidate.ApplyDetail.ExpectedSalary">Expected Salary</label>
+                            <input asp-for="Candidate.ApplyDetail.ExpectedSalary" class="form-control form-control-sm" required type="number" value="@Model.Candidate.ApplyDetail.ExpectedSalary">
+                        </div>
+                        <div class="form-group col-md-5">
+                            <label asp-for="Candidate.ApplyDetail.AvailableCommencementDate">Available Commencement Date</label>
+                            <input asp-for="Candidate.ApplyDetail.AvailableCommencementDate" id="canWorkDate" class="form-control form-control-sm" required type="date" value="@Model.Candidate.ApplyDetail.AvailableCommencementDate.ToString("yyyy-MM-dd")" min="@Model.Candidate.ApplyDetail.ApplyDate.ToString("yyyy-MM-dd")">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="Candidate.ApplyDetail.JobSourceId">Job Source</label>
+                            <select asp-for="Candidate.ApplyDetail.JobSourceId" class="form-control form-control-sm">
+                                @foreach (var source in jobSourceRepository.GetJobSources())
+                                {
+                                    <option value="@source.JobSourceId" selected="@(source.JobSourceId == Model.Candidate.ApplyDetail.JobSourceId ? "selected" : null)">@source.JobSourceName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>*@
+                <hr />
+
+                <div class="form-group row">
+                    <div class="form-group col-md-10">
+                        <label asp-for="Avatar" class="col-form-label">Avatar Photo</label>
+                        <div class="custom-file">
+                            <input asp-for="Avatar" class="form-control form-control-sm custom-file-input">
+                            <label class="custom-file-label">@(!String.IsNullOrEmpty(Model.Candidate.AvatarPath) ? Model.Candidate.AvatarPath.Substring(Model.Candidate.AvatarPath.IndexOf("_") + 1) : "Choose File...")</label>
+                        </div>
+                    </div>
+                    <img class="mh-100 col-md-2" src="@avatarPath" asp-append-version="true" />
+                </div>
+                <hr />
+                @*<div class="form-group">
+                        <label asp-for="CVFile" class="col-form-label">Upload File</label>
+                        <div class="form-row">
+                            <div class="custom-file col-md-10">
+                                <input asp-for="CVFile" class="form-control form-control-sm custom-file-input">
+                                <label class="custom-file-label">@(!String.IsNullOrEmpty(Model.Candidate.CandidateBackground.CvfilePath) ? Model.Candidate.CandidateBackground.CvfilePath.Substring(Model.Candidate.CandidateBackground.CvfilePath.IndexOf("_") + 1) : "Choose File...")</label>
+                            </div>
+                            <div class="text-center my-auto col-md-2">
+                                <a href="@(!String.IsNullOrEmpty(Model.Candidate.CandidateBackground.CvfilePath) ? "~/candidate/cv/" + Model.Candidate.CandidateBackground.CvfilePath : null)" target="_blank">@(!String.IsNullOrEmpty(Model.Candidate.CandidateBackground.CvfilePath) ? Model.Candidate.CandidateBackground.CvfilePath.Substring(Model.Candidate.CandidateBackground.CvfilePath.IndexOf("_") + 1) : "null")</a>
+                            </div>
+                        </div>
+
+                    </div>*@
+            </div>
+        </div>
+    </div>
+
+    <div class="text-right">
+        <button type="submit" class="btn btn-outline-primary btn-sm mt-3">Save</button>
+    </div>
+</form>
+
+
+@section Scripts {
+    @*@if (Model.Candidate.ApplyDetail.IsCvpass != null)
+        {
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    $("#editCandidateForm :input").prop("disabled", true);
+                });
+            </script>
+        }*@
+}

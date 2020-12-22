@@ -1,0 +1,108 @@
+﻿@model CandidateViewModel
+@inject SignInManager<IdentityUser> SignInManager
+@inject ICollegeRepository collegeRepository
+@inject IApplyPositionRepository applyPositionRepository
+@{ ViewData["Title"] = "Candidate Register"; }
+
+<h3>Fill all input below</h3>
+<div asp-validation-summary="All" class="text-danger"></div>
+<form enctype="multipart/form-data" method="post">
+    <div class="card-group">
+        <div class="card">
+            <div class="card-header bg-info text-white">Candidate Info</div>
+            <div class="card-body">
+                @*<input asp-for="Candidate.CandidateId" type="hidden">*@
+                <input asp-for="UserId" type="hidden">
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.FullName">Full Name</label>
+                        <input asp-for="Candidate.FullName" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label asp-for="Candidate.Gender">Gender</label>
+                        <select asp-for="Candidate.Gender" class="form-control form-control-sm">
+                            <option value="F">Female</option>
+                            <option value="M">Male</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.DateOfBirth">Date Of Birth</label>
+                        <input asp-for="Candidate.DateOfBirth" class="form-control form-control-sm" type="date" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.IdentityNumber">Identity Number</label>
+                        <input asp-for="Candidate.IdentityNumber" class="form-control form-control-sm" type="number" required maxlength="12">
+                    </div>
+                    <div class="form-group col-md-5">
+                        <label asp-for="Candidate.PlaceOfBirth">Place Of Birth</label>
+                        <input asp-for="Candidate.PlaceOfBirth" class="form-control form-control-sm" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label asp-for="Candidate.Email">Email</label>
+                        <input asp-for="Candidate.Email" class="form-control form-control-sm" required type="email">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.Telephone">Telephone</label>
+                        <input asp-for="Candidate.Telephone" class="form-control form-control-sm" required type="number" maxlength="10">
+                    </div>
+                    <div class="form-group col-md-7">
+                        <label asp-for="Candidate.Address">Address</label>
+                        <input asp-for="Candidate.Address" class="form-control form-control-sm" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-100 my-1"></div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">Candidate Background</div>
+            <div class="card-body">
+                @*<input asp-for="Candidate.CandidateBackground.CandidateId" type="hidden">*@
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label asp-for="Candidate.CandidateBackground.College.CollegeId">University</label>
+                        <select asp-for="Candidate.CandidateBackground.College.CollegeId" class="form-control form-control-sm">
+                            @foreach (var college in collegeRepository.GetColleges())
+                            {
+                                <option value="@college.CollegeId">@college.CollegeName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label asp-for="Candidate.CandidateBackground.Major">Major</label>
+                        <input asp-for="Candidate.CandidateBackground.Major" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.CandidateBackground.CurrentCollegeYear">Year</label>
+                        <input asp-for="Candidate.CandidateBackground.CurrentCollegeYear" class="form-control form-control-sm" required type="number" min="1" max="10">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.CandidateBackground.CurrentGpa">GPA</label>
+                        <input asp-for="Candidate.CandidateBackground.CurrentGpa" class="form-control form-control-sm" required type="number" min="1" max="10">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Candidate.CandidateBackground.GraduateDate">Graduate Date</label>
+                        <input asp-for="Candidate.CandidateBackground.GraduateDate" class="form-control form-control-sm" required type="date">
+                    </div>
+                </div>
+                <hr />
+                <div class="form-row">
+                    <label asp-for="Avatar" class="col-form-label">Upload Avatar</label>
+                    <div class="custom-file">
+                        <input asp-for="Avatar" class="form-control form-control-sm custom-file-input">
+                        <label class="custom-file-label">Choose File...</label>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-right">
+                <button type="submit" class="btn btn-outline-primary btn-sm">Register</button>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+}

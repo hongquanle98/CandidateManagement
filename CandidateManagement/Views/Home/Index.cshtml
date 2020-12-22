@@ -1,0 +1,30 @@
+﻿@model IndexViewModel
+@{
+    ViewData["Title"] = "Index";
+    int requirementCount = Model.Requirements.Where(r => r.RecruitTo.Date > DateTime.Today).Count();
+    var bannerList = ConstantHelper.Company.Banners.ToArray();
+}
+
+<div class="row mx-5">
+    <div class="col-md-8">
+        <div class="border border-grey mb-3">
+            <span class="m-2 d-inline-block"><b>@requirementCount</b> suitable job</span>
+        </div>
+        @foreach (var requirement in Model.Requirements)
+        {
+            @await Html.PartialAsync("_RequirementPartial", requirement)
+        }
+    </div>
+    <div class="col-md-4 group-banner">
+        @Html.Raw(string.Join("", bannerList))
+    </div>
+</div>
+
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            showBanner(4);
+        });
+    </script>
+}

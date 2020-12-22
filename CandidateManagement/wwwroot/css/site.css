@@ -1,0 +1,259 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand {
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.border-top {
+    border-top: 1px solid #e5e5e5;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+    font-size: 1rem;
+    line-height: inherit;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    line-height: 60px; /* Vertically center the text there */
+}
+
+.modal-body {
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+}
+/*vertical center child item*/
+.vcenter-item {
+    display: flex;
+    align-items: center;
+}
+
+/*loading overlay*/
+.loading .loading-overlay {
+    background: rgba(255,255,255,.6);
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    top: 0;
+}
+
+.loading .loading-container {
+    position: fixed;
+    z-index: 99999;
+    top: 50%;
+    left: 50%;
+    transform: translate( -50%, -50% );
+}
+
+@keyframes scaling {
+    0%, 100% {
+        transform: scale(0.2);
+        background-color: #30FFB7;
+    }
+
+    40% {
+        transform: scale(1);
+        background-color: #07DEFF;
+    }
+
+    50% {
+        transform: scale(1);
+        background-color: #0761FF;
+    }
+}
+
+.loading .loading-container .loading-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    transform: scale(0);
+    background-color: red;
+    animation: scaling 1s ease-in-out infinite;
+    display: inline-block;
+    margin: .25rem;
+}
+
+    .loading .loading-container .loading-dot:nth-child(0) {
+        animation-delay: 0s;
+    }
+
+    .loading .loading-container .loading-dot:nth-child(1) {
+        animation-delay: 0.2s;
+    }
+
+    .loading .loading-container .loading-dot:nth-child(2) {
+        animation-delay: 0.4s;
+    }
+
+    .loading .loading-container .loading-dot:nth-child(3) {
+        animation-delay: 0.6s;
+    }
+
+    .loading .loading-container .loading-dot:nth-child(4) {
+        animation-delay: 0.8s;
+    }
+
+    .loading .loading-container .loading-dot:nth-child(5) {
+        animation-delay: 1s;
+    }
+
+.modal .form-group {
+    margin-bottom: .5rem;
+}
+
+/*disabled a tag*/
+a.disabled {
+    pointer-events: none;
+    color: #ccc !important;
+}
+
+/*override bootstrap*/
+/*override disabled button color*/
+.btn.disabled, .btn:disabled {
+    color: #6c757d !important;
+}
+
+/*override color*/
+.text-warning {
+    color: #f7941d !important;
+}
+
+.bg-cyan {
+    background-color: #97e6ff;
+}
+
+.bg-light-cyan {
+    background-color: #f5fcff;
+}
+
+.border-cyan {
+    border-color: #97e6ff !important;
+}
+
+.border-grey {
+    border-color: #e0e0e0;
+}
+
+.btn-outline-warning:not(:disabled):not(.disabled).active, .btn-outline-warning:not(:disabled):not(.disabled):active, .show > .btn-outline-warning.dropdown-toggle {
+    background-color: #f7941d;
+    border-color: #f7941d;
+}
+
+.btn-outline-warning {
+    color: #f7941d;
+    border-color: #f7941d;
+}
+
+    .btn-outline-warning:hover {
+        background-color: #f7941d;
+        border-color: #f7941d;
+    }
+
+.btn.disabled, .btn:disabled:hover {
+    background-color: #fff;
+}
+
+a.text-danger:hover {
+    color: #f7941d !important;
+    text-decoration: none;
+}
+
+a.text-grey {
+    color: #555 !important;
+}
+
+    a.text-grey:hover {
+        color: #f7941d !important;
+        text-decoration: none;
+    }
+
+.btn:hover {
+    color: #fff;
+}
+
+i.text-muted:hover {
+    color: #f7941d !important;
+}
+
+a.text-muted:hover {
+    color: #f7941d !important;
+    text-decoration: none;
+}
+
+button.btn-link.text-muted:hover {
+    color: #f7941d !important;
+    text-decoration: none;
+}
+
+/*box shadow*/
+.requirement {
+    box-shadow: 0 5px 20px 0 rgba(0,0,0,0);
+}
+
+    .requirement:hover {
+        box-shadow: 0 3px 10px 0 rgba(0,0,0,0.1);
+        z-index: 1;
+    }
+
+.card {
+    box-shadow: 0 3px 10px 0 rgba(0,0,0,0.1);
+}
+.table.dataTable {
+    box-shadow: 0 3px 10px 0 rgba(0,0,0,0.1);
+}

@@ -1,0 +1,118 @@
+﻿@model RequirementViewModel
+
+@inject IRequiredAbilityRepository requiredAbilityRepository
+@inject IApplyPositionRepository applyPositionRepository
+@inject IApplyPositionAbilityRepository applyPositionAbilityRepository
+@{
+    ViewData["Title"] = "Add Requirement";
+    var applyPositions = applyPositionRepository.GetApplyPositions();
+    var applyPositionAbilityList = applyPositionAbilityRepository.GetApplyPositionAbilities(applyPositions.Select(ap => ap.ApplyPositionId).FirstOrDefault()).Select(apa => apa.Ability);
+
+}
+
+<h2>Add Requirement</h2>
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form method="post">
+    <div class="card-group">
+        <div class="card">
+            <div class="card-header bg-info text-white">Requirement</div>
+            <div class="card-body">
+                @*<input asp-for="Candidate.CandidateId" type="hidden">*@
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label asp-for="Requirement.Title">Title</label>
+                        <input asp-for="Requirement.Title" class="form-control form-control-sm" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label asp-for="Requirement.WorkPlace">Work Place</label>
+                        <input asp-for="Requirement.WorkPlace" class="form-control form-control-sm" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label asp-for="Requirement.ApplyPositionId">Apply Position</label>
+                        <select asp-for="Requirement.ApplyPositionId" class="form-control form-control-sm" id="applyPosition">
+                            @foreach (var applyPosition in applyPositions)
+                            {
+                                <option value="@applyPosition.ApplyPositionId" data-id="@applyPosition.ApplyPositionId">@applyPosition.ApplyPositionName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label asp-for="Requirement.RecruitAmount">Amount</label>
+                        <input asp-for="Requirement.RecruitAmount" class="form-control form-control-sm" min="1" type="number" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label asp-for="Requirement.Language">Language</label>
+                        <select asp-for="Requirement.Language" class="form-control form-control-sm">
+                            <option value="Any">Any</option>
+                            <option value="English">English</option>
+                            <option value="Vietnamese">Vietnamese</option>
+                            <option value="Japanese">Japanese</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label asp-for="Requirement.RecruitFrom">Recruit From</label>
+                        <input asp-for="Requirement.RecruitFrom" class="form-control form-control-sm" type="date" required>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label asp-for="Requirement.RecruitTo">Recruit To</label>
+                        <input asp-for="Requirement.RecruitTo" class="form-control form-control-sm" type="date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>Ability</label>
+                                <div id="apply-position-ability">
+                                    @await Html.PartialAsync("_ApplyPositionAbilityCheckBoxPartial", Model)
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Salary</label>
+                                @foreach (var salary in Model.SalaryAbilities)
+                                {
+                                    <div class="form-check">
+                                        <input asp-for="SelectedSalaryAbilitiyId" type="radio" value="@salary.AbilityId" class="form-check-input" id="salary@(salary.AbilityId)" />
+                                        <label class="form-check-label" for="salary@(salary.AbilityId)">
+                                            @salary.AbilityName
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-4">
+                                <label>Worked Time</label>
+                                @foreach (var workedTime in Model.WorkedTimeAbilities)
+                                {
+                                    <div class="form-check">
+                                        <input asp-for="SelectedWorkedTimeAbilitiyId" type="radio" value="@workedTime.AbilityId" class="form-check-input" id="workedTime@(workedTime.AbilityId)" />
+                                        <label class="form-check-label" for="workedTime@(workedTime.AbilityId)">
+                                            @workedTime.AbilityName
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Requirement.Description">Description</label>
+                            <textarea asp-for="Requirement.Description" rows="5" class="form-control form-control-sm"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Requirement.RequireDescription">Require Description</label>
+                            <textarea asp-for="Requirement.RequireDescription" rows="5" class="form-control form-control-sm"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+

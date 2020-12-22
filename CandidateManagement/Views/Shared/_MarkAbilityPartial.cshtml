@@ -1,0 +1,105 @@
+﻿@model EvaluateViewModel
+
+@{
+    ViewData["Title"] = "Evaluate";
+    Layout = "~/Views/Shared/_EmptyLayout.cshtml";
+}
+
+@inject IApplyDetailAbilityRepository applyDetailAbilityRepository
+@{
+    var applyDetailAbilityList = applyDetailAbilityRepository.GetApplyDetailAbility(Model.ApplyDetail.ApplyDetailId);
+}
+
+<div id="markAbilityModal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    @if (Model.Operator != null)
+                    {
+                        <p>@Model.Operator.OperatorName's evaluation</p>
+                    }
+                </h5>
+
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <form method="post">
+                <input type="hidden" asp-for="InterviewSchedule.InterviewId" />
+                <input type="hidden" asp-for="Operator.OperatorId" />
+                <div class="row m-3">
+                    <div class="col-md-6 pr-4 border-right">
+                        <h5 class="mb-4">Apply Detail Ability</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var applyDetailAbility in applyDetailAbilityList)
+                            {
+                                <li class="mb-2">
+                                    <p class="mb-0">@applyDetailAbility.Ability.AbilityName</p>
+                                    <div class="progress" style="height: 15px;">
+                                        <div class="progress-bar" role="progressbar" style="width: @(applyDetailAbility.Point * 10)%;">@applyDetailAbility.Point</div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="col-md-6 pl-5">
+                        <h5>Ability Evaluate</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="mb-3"><b>Ability</b></label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="mb-3"><b>Point</b></label>
+                            </div>
+                        </div>
+                        @for (int i = 0; i < Model.ApplyDetailAbilities.Count; i++)
+                        {
+                            <div class="form-group row">
+                                <div class="form-check col-md-6">
+                                    <input type="hidden" asp-for="@Model.ApplyDetailAbilities[i].ApplyDetailAbilityID" />
+                                    <input type="hidden" asp-for="@Model.ApplyDetailAbilities[i].AbilityName" />
+                                    <input asp-for="@Model.ApplyDetailAbilities[i].IsSelected" class="form-check-input" id="ability_@(Model.ApplyDetailAbilities[i].ApplyDetailAbilityID)" />
+                                    <label class="form-check-label" asp-for="@Model.ApplyDetailAbilities[i].IsSelected" for="ability_@(Model.ApplyDetailAbilities[i].ApplyDetailAbilityID)">
+                                        @Model.ApplyDetailAbilities[i].AbilityName
+                                    </label>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" asp-for="@Model.ApplyDetailAbilities[i].Point" class="form-control form-control-sm" id="abilityPoint_@(Model.ApplyDetailAbilities[i].ApplyDetailAbilityID)" min="0" max="10" disabled="@(Model.ApplyDetailAbilities[i].Point > 0 ? false : true)" value="@Model.ApplyDetailAbilities[i].Point" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button asp-controller="Admin" asp-action="MarkAbility" type="submit" class="btn btn-outline-primary btn-sm">Save</button>
+                    @*@if (Model.ApplyDetail.IsInterviewPass == null)
+                        {
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="pass" method="post">
+                                <a class="text-success font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
+                            </form>
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="fail" method="post">
+                                <a class="text-danger font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
+                            </form>
+                        }
+                        else if (Model.ApplyDetail.IsInterviewPass == false)
+                        {
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="pass" method="post">
+                                <a class="text-success font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
+                            </form>
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="null" method="post">
+                                <a class="text-info font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
+                            </form>
+                        }
+                        else
+                        {
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="fail" method="post">
+                                <a class="text-danger font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
+                            </form>
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="null" method="post">
+                                <a class="text-info font-weight-bold" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
+                            </form>
+                        }*@
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
