@@ -32,6 +32,8 @@ namespace CandidateManagement.Repositories
             return _context.ApplyDetailAbility
                 .Include(ada => ada.ApplyDetail)
                 .Include(ada => ada.Ability)
+                .Include(ada => ada.InterviewResult)
+                .ThenInclude(ir => ir.Operator)
                 .Where(ada => ada.ApplyDetailId == applyDetailID);
         }
 

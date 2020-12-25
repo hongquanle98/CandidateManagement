@@ -55,7 +55,6 @@
                         <th scope="col">Recruit Amount</th>
                         <th scope="col">Expected Salary</th>
                         <th scope="col">Worked Time</th>
-                        <th scope="col">Ability</th>
                         <th scope="col">Operator Mark</th>
                         <th scope="col">CV</th>
                         <th scope="col">Interview</th>
@@ -67,13 +66,10 @@
                         var candidate = applyDetail.Apply.Candidate;
                         var applyDetailAbilities = applyDetailAbilityRepository.GetApplyDetailAbility(applyDetail.ApplyDetailId);
                         var interviewSchedule = interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(applyDetail.ApplyDetailId).LastOrDefault();
-                        var interviewResults = new Dictionary<int, int>();
                         bool canEvaluate = false;
                         if (interviewSchedule != null)
                         {
                             canEvaluate = !interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Any(ir => ir.Point == 0) && User.IsInRole("Manager");
-                            int operatorCount = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).GroupBy(i => i.OperatorId).Count();
-                            interviewResults = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Where(i => i.Point > 0).GroupBy(i => i.ApplyDetailAbilityId).ToDictionary(i => i.Key, i => i.Sum(ise => ise.Point) / operatorCount);
                         }
                         <tr>
                             <td>@FormatHelper.FormatDate(applyDetail.ApplyDate)</td>
@@ -82,36 +78,29 @@
                             <td>@applyDetail.Requirement.RecruitAmount employee</td>
                             <td>@FormatHelper.FormatCurrency(applyDetail.ExpectedSalary)</td>
                             <td>@applyDetail.WorkedTime year</td>
-                            <td>
+                            <td class="text-nowrap">
                                 <ul class="list-unstyled">
                                     @foreach (var applyDetailAbility in applyDetailAbilities)
                                     {
-                                        <li>
-                                            <p class="mb-0">@applyDetailAbility.Ability.AbilityName</p>
-                                            <div class="progress" style="height: 12px;">
-                                                <div class="progress-bar bg-info" role="progressbar" style="width: @(applyDetailAbility.Point * 10)%;">@applyDetailAbility.Point</div>
-                                            </div>
-                                        </li>
-                                    }
-                                </ul>
-                            </td>
-                            <td>
-                                <ul class="list-unstyled">
-                                    @if (interviewResults.Count > 0)
-                                    {
-                                        foreach (var interviewResult in interviewResults)
-                                        {
-                                            var ability = applyDetailAbilityRepository.GetApplyDetailAbilityById(interviewResult.Key).Ability;
-                                            int operatorPoint = interviewResult.Value;
-                                            int candidatePoint = applyDetailAbilities.FirstOrDefault(ada => ada.AbilityId == ability.AbilityId).Point;
-                                            string backgroundColorClass = operatorPoint >= candidatePoint ? "bg-success" : "bg-danger";
-                                            <li>
-                                                <p class="mb-0">@ability.AbilityName</p>
-                                                <div class="progress" style="height: 12px;">
-                                                    <div class="progress-bar @backgroundColorClass" role="progressbar" style="width: @(operatorPoint * 10)%;">@operatorPoint</div>
+                                        <li class="d-block">
+                                            <div class="d-inline-block">
+                                                <p class="mb-0" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100px;">@applyDetailAbility.Ability.AbilityName</p>
+                                                <div class="progress" style="height: 12px; width: 100px;">
+                                                    <div class="progress-bar bg-info" role="progressbar" style="width: @(applyDetailAbility.Point * 10)%;">@applyDetailAbility.Point</div>
                                                 </div>
-                                            </li>
-                                        }
+                                            </div>
+
+                                            @foreach (var interviewResult in applyDetailAbility.InterviewResult.OrderBy(ir => ir.OperatorId))
+                                            {
+                                                <div class="d-inline-block">
+                                                    <p class="mb-0" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100px;">@interviewResult.Operator.OperatorName</p>
+                                                    <div class="progress" style="height: 12px; width: 100px;">
+                                                        <div class="progress-bar bg-info" role="progressbar" style="width: @(interviewResult.Point * 10)%;">@interviewResult.Point</div>
+                                                    </div>
+                                                </div>
+
+                                            }
+                                        </li>
                                     }
                                 </ul>
                             </td>
