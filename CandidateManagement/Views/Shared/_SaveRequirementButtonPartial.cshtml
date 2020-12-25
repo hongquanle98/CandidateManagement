@@ -8,7 +8,7 @@
 @inject UserManager<IdentityUser> UserManager
 @{
     bool isSignedIn = SignInManager.IsSignedIn(User);
-    bool isAdmin = isSignedIn && User.IsInRole("Admin");
+    bool isAdmin = isSignedIn && !User.IsInRole("Candidate");
     bool wasAppliedRequirement = isSignedIn && !isAdmin && applyDetailRepository.GetApplyDetailsByCandidateId(Model.Candidate.CandidateId).Where(ad => ad.RequirementId == Model.Requirement.RequirementId).Any();
     int candidateId = 0;
     bool wasSavedRequirement = false;

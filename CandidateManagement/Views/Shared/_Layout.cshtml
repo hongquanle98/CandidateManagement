@@ -1,10 +1,12 @@
 ﻿@inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @inject ICandidateRepository candidateRepository
+@inject IOperatorRepository operatorRepository
+@using System.Security.Claims;
 @{
     bool isSignedIn = SignInManager.IsSignedIn(User);
-    bool isAdmin = isSignedIn && User.IsInRole("Admin");
-    string role = isSignedIn ? (isAdmin ? "Admin" : "Candidate") : "";
+    bool isAdmin = isSignedIn && !User.IsInRole("Candidate");
+
     string avatar = isSignedIn ? (isAdmin ? ConstantHelper.Admin.Avatar : FormatHelper.FormatCandidateAvatar(candidateRepository.GetCandidate(UserManager.GetUserId(User)).AvatarPath)) : "";
 }
 
@@ -13,7 +15,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CandidateManagement</title>
+    <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
     <link href="~/lib/jquery-toast-plugin/jquery.toast.min.css" rel="stylesheet" />
@@ -26,7 +28,7 @@
 <body class="small">
     <header>
         <nav class="navbar navbar-expand-lg navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 fixed-top">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index">CandidateManagement</a>
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index"><img src="@ConstantHelper.Website.Logo" height="40" asp-append-version="true"/></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -62,14 +64,27 @@
                     @*If the user is signed-in display Logout link*@
                     @if (isSignedIn)
                     {
+                        string userId = UserManager.GetUserId(User);
+                        var user = await UserManager.FindByIdAsync(userId);
+                        var roles = UserManager.GetRolesAsync(user);
+                        var op = operatorRepository.GetOperator(user.Id);
+                        var candidate = candidateRepository.GetCandidate(user.Id);
                         <li class="dropdown show nav-item">
                             <span class="dropdown-toggle" style="cursor:pointer;" id="accountDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="d-inline-block">
-                                    <span class="d-block">@User.Identity.Name </span>
-                                    <span class="d-block float-right">@role</span>
+                                <span class="d-inline-block text-right">
+                                    <span class="d-block"><b>@(op != null ? op.OperatorName : candidate != null ? candidate.FullName : "")</b></span>
+                                    <span class="d-block">@user.UserName</span>
+                                    <span class="d-block">@string.Join(", ", roles.Result)</span>
                                 </span>
-                                <span class="d-inline-block">
-                                    <img src="@avatar" asp-append-version="true" height="50" class="rounded" />
+                                <span class="d-inline-block float-right">
+                                    @if (roles.Result.Contains("Candidate"))
+                                    {
+                                        <img src="@avatar" asp-append-version="true" height="50" class="rounded" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-user-shield fa-3x"></i>
+                                    }
                                 </span>
                             </span>
 

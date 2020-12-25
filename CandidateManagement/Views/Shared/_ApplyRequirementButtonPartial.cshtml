@@ -9,7 +9,7 @@
 @{
     int recruitTime = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.Requirement.RecruitTo);
     bool isSignedIn = SignInManager.IsSignedIn(User);
-    bool isAdmin = isSignedIn && User.IsInRole("Admin");
+    bool isAdmin = isSignedIn && !User.IsInRole("Candidate");
     bool wasAppliedRequirement = isSignedIn && !isAdmin && applyDetailRepository.GetApplyDetailsByCandidateId(Model.Candidate.CandidateId).Where(ad => ad.RequirementId == Model.Requirement.RequirementId).Any();
     bool isExpired = recruitTime == 0 ? true : false;
 }

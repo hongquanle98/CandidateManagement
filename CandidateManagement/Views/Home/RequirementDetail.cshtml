@@ -16,6 +16,7 @@
     var applyPositionAbilityList = applyPositionAbilityRepository.GetApplyPositionAbilities(Model.Requirement.ApplyPositionId).Select(apa => apa.Ability);
     var advantageAbilityList = applyPositionAbilityList.Where(a => !requiredAbilityList.Select(a1 => a1.AbilityId).Contains(a.AbilityId));
     var otherRequirementList = Model.OtherRequirement.Take(8).ToArray();
+    int applyDetailAmount = applyDetailRepository.GetApplyDetailsByRequirementId(Model.Requirement.RequirementId).Count();
 
     string requiredSalary = "Thương lượng";
     string requiredWorkTime = "Không yêu cầu kinh nghiệm";
@@ -41,7 +42,7 @@
             <h7>@ConstantHelper.Company.Name</h7>
             <p class="pb-1 mb-0">Work place: @Model.Requirement.WorkPlace</p>
             <p class="pb-1 mb-0 text-warning">@requiredSalary</p>
-            <p class="pb-1 mb-1 text-muted">@Model.Requirement.ViewCount view - @recruitTime day for apply@(isExpired ? "(expired)" : "")</p>
+            <p class="pb-1 mb-1 text-muted">@Model.Requirement.ViewCount view @(applyDetailAmount > 0 ? $"({applyDetailAmount} apply)" : "") - @recruitTime day for apply@(isExpired ? "(expired)" : "")</p>
         </div>
         <div class="col-md-2 my-auto">
             <div class="apply-requirement-button">

@@ -103,7 +103,9 @@ namespace CandidateManagement.Controllers
 
                 candidateRepository.Add(newCandidate);
 
-                string avatarName = string.Format("{0}.png", model.UserId);
+                var newestCandidate = candidateRepository.GetNewestCandidate();
+
+                string avatarName = string.Format("{0}_{1}", DateTime.Today.ToString("yyyy-MM-dd"), string.Format("{0:D3}", newestCandidate.CandidateId));
                 newCandidate.AvatarPath = UploadFile(model.Avatar, avatarName, "candidate\\avatar");
 
                 candidateRepository.Update(newCandidate);
@@ -266,7 +268,7 @@ namespace CandidateManagement.Controllers
                 Candidate = candidateRepository.GetCandidate(candidateId)
             };
             var applyPositionAbilityList = applyPositionAbilityRepository.GetApplyPositionAbilities(model.Requirement.ApplyPositionId).Select(apa => apa.Ability);
-            var requiredAbilityList = requiredAbilityRepository.GetRequiredAbilities(model.Requirement.RequirementId).Select(ra => ra.Ability);
+            var requiredAbilityList = requiredAbilityRepository.GetRequiredAbilities(model.Requirement.RequirementId).Where(ra => !new string[] { "Salary", "WorkedTime"}.Contains(ra.Ability.Note)).Select(ra => ra.Ability);
             var advantageAbilityList = applyPositionAbilityList.Where(a => !requiredAbilityList.Select(a1 => a1.AbilityId).Contains(a.AbilityId));
             model.RequiredAbilities = new List<ApplyRequirementDetailViewModel.Ability>();
             foreach (var ability in requiredAbilityList)
@@ -307,10 +309,18 @@ namespace CandidateManagement.Controllers
                     RequirementId = model.Requirement.RequirementId,
                     ApplyDate = DateTime.Now,
                     ExpectedSalary = model.ApplyDetail.ExpectedSalary,
-                    WorkedTime = model.ApplyDetail.WorkedTime
+                    WorkedTime = model.ApplyDetail.WorkedTime,
+                    CvfilePath = "foo"
                 };
 
                 applyDetailRepository.Add(applyDetail);
+                var newestApplyDetail = applyDetailRepository.GetNewestApplyDetail();
+
+                string cvFileName = string.Format("{0}_{1}", applyDetail.ApplyDate.Date.ToString("yyyy-MM-dd"), string.Format("{0:D3}", newestApplyDetail.ApplyDetailId));
+                applyDetail.CvfilePath = UploadFile(model.CVFile, cvFileName, "candidate\\cv");
+
+                applyDetailRepository.Update(applyDetail);
+
                 foreach (var ability in model.RequiredAbilities.Union(model.AdvantageAbilities).Where(a => a.IsSelected))
                 {
                     var applyDetailAbility = new ApplyDetailAbility

@@ -15,6 +15,7 @@ namespace CandidateManagement.Models
         public DateTime InterviewDate { get; set; }
         public TimeSpan InterviewTime { get; set; }
         public bool IsEmailSent { get; set; }
+        public bool? IsInterviewPass { get; set; }
 
         public ApplyDetail ApplyDetail { get; set; }
         public ICollection<InterviewResult> InterviewResult { get; set; }

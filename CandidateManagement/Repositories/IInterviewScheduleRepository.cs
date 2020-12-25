@@ -15,5 +15,6 @@ namespace CandidateManagement.Repositories
         IEnumerable<InterviewSchedule> GetInterviewScheduleByApplyDetailId(int applyDetailID);
         IEnumerable<InterviewSchedule> GetInterviewSchedules();
         InterviewSchedule GetNewestInterviewSchedule();
+        void UpdateInterviewStatus(int interviewID, string status);
     }
 }

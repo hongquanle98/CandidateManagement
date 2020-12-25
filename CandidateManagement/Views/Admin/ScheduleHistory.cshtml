@@ -6,6 +6,7 @@
 @inject UserManager<IdentityUser> UserManager
 @{
     ViewData["Title"] = "ScheduleHistory";
+    var lastInterview = interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).LastOrDefault();
 }
 <h3>Schedule History</h3>
 <div class="card-group">
@@ -16,7 +17,7 @@
     <div class="card">
         <div class="card-header bg-info text-white">Schedule History</div>
         <div class="card-body">
-            <button class="btn btn-outline-primary btn-sm mb-3" onclick="ShowAddInterviewModal(@Model.ApplyDetail.ApplyDetailId);" disabled="@(!Model.ApplyDetail.IsInterviewPass.HasValue)">Add New Interview Schedule</button>
+            <button class="btn btn-outline-primary btn-sm mb-3" onclick="ShowAddInterviewModal(@Model.ApplyDetail.ApplyDetailId);" disabled="@(lastInterview != null && lastInterview.IsInterviewPass != false)">Add New Interview Schedule</button>
             <div class="card-text">
                 @if (Model.InterviewSchedules.Count() > 0)
                 {
@@ -32,26 +33,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                @foreach (var interviewSchedule in Model.InterviewSchedules)
+                            @foreach (var interviewSchedule in Model.InterviewSchedules)
+                            {
+                                bool canMarkAbility = false;
+                                var operators = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Select(ir => ir.Operator).GroupBy(o => o.OperatorId).Select(o => o.First());
+                                var signedInOperator = operatorRepository.GetOperator(UserManager.GetUserId(User));
+                                if (signedInOperator != null)
                                 {
-                                    bool canEvaluate = false;
-                                    var operators = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Select(ir => ir.Operator).GroupBy(o => o.OperatorId).Select(o => o.First());
-                                    var signedInOperator = operatorRepository.GetOperator(UserManager.GetUserId(User));
-                                    if (signedInOperator != null)
+                                    var irOfOperator = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Where(ir => ir.OperatorId == signedInOperator.OperatorId);
+                                    if (irOfOperator.Any() && interviewSchedule.IsInterviewPass == null)
                                     {
-                                        var irOfOperator = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Where(ir => ir.OperatorId == signedInOperator.OperatorId);
-                                        if (irOfOperator.Any() && interviewSchedule.ApplyDetail.IsInterviewPass == null)
-                                        {
-                                            canEvaluate = true;
-                                        }
+                                        canMarkAbility = true;
                                     }
-                                    <td>@interviewSchedule.InterviewDate.ToString("yyyy/MM/dd")</td>
+                                }
+                                bool hasMarkedAbility = !interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Any(ir => ir.Point == 0);
+                                bool canEvaluate = hasMarkedAbility && User.IsInRole("Manager") && lastInterview.InterviewId == interviewSchedule.InterviewId;
+                                bool canDelete = !hasMarkedAbility && interviewSchedule.IsInterviewPass == null;
+                                <tr>
+                                    <td>@FormatHelper.FormatDate(interviewSchedule.InterviewDate)</td>
                                     <td>@string.Format("{0:hh\\:mm}", interviewSchedule.InterviewTime)</td>
                                     <td>
                                         @foreach (var op in operators)
                                         {
-                                            <span class="badge badge-dark">
+                                            bool hasMarkedAllAbility = !interviewResultRepository.GetInterviewResultByInterviewIDAndOperatorID(interviewSchedule.InterviewId, op.OperatorId).Where(ir => ir.Point == 0).Any();
+                                            <span class="badge @(hasMarkedAllAbility ? "badge-dark" : "badge-light")">
                                                 @op.OperatorName
                                             </span>
                                         }
@@ -68,47 +73,69 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex justify-content-center">
-                                            <button class="btn btn-link text-primary font-weight-bold btn-sm" onclick="ShowMarkAbilityModal(@Model.ApplyDetail.ApplyDetailId, @interviewSchedule.InterviewId);" disabled="@(canEvaluate ? false : true)">Mark Ability</button>
+                                            <button class="btn btn-link text-primary font-weight-bold btn-sm" onclick="ShowMarkAbilityModal(@Model.ApplyDetail.ApplyDetailId, @interviewSchedule.InterviewId);" disabled="@(!canMarkAbility)">Mark Ability</button>
 
                                             <button class="btn btn-link text-info font-weight-bold btn-sm" onclick="ShowEditInterviewModal(@Model.ApplyDetail.ApplyDetailId, @interviewSchedule.InterviewId);">Edit</button>
 
                                             <form class="mx-1" asp-controller="Admin" asp-action="DeleteInterview" asp-route-id="@interviewSchedule.InterviewId" method="post">
-                                                <button class="btn btn-link text-danger font-weight-bold btn-sm" type="submit" onclick="return confirm('Are you sure?');">Delete</button>
+                                                <button class="btn btn-link text-danger font-weight-bold btn-sm" type="submit" onclick="return confirm('Are you sure?');" disabled="@(!canDelete)">Delete</button>
                                             </form>
                                         </div>
                                     </td>
                                     <td class="text-center">
                                         @{
-                                            if (Model.ApplyDetail.IsCvpass == null || Model.ApplyDetail.IsCvpass == false)
+                                            
+                                            if (interviewSchedule.IsInterviewPass == null)
                                             {
-                                                <p class="badge badge-warning my-auto d-block">Invalid CV</p>
+                                                <div>
+                                                    <p class="badge badge-primary my-auto d-block">@(hasMarkedAbility ? "Not Evaluate" : "Not Mark All Ability")</p>
+                                                    @if (canEvaluate && hasMarkedAbility)
+                                                    {
+                                                        <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@interviewSchedule.InterviewId" asp-route-status="pass" method="post">
+                                                            <a class="text-success font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
+                                                        </form>
+                                                        <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@interviewSchedule.InterviewId" asp-route-status="fail" method="post">
+                                                            <a class="text-danger font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
+                                                        </form>
+                                                    }
+
+                                                </div>
                                             }
-                                            else
+                                            if (interviewSchedule.IsInterviewPass == true)
                                             {
-                                                if (!interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).Any())
-                                                {
-                                                    <p class="badge badge-info my-auto d-block">Pending</p>
-                                                }
-                                                else
-                                                {
-                                                    if (Model.ApplyDetail.IsInterviewPass == null)
+                                                <div>
+                                                    <p class="badge badge-success my-auto d-block">Passed</p>
+                                                    @if (canEvaluate)
                                                     {
-                                                    <p class="badge badge-primary my-auto d-block">Not Evaluate</p>
+                                                        <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@interviewSchedule.InterviewId" asp-route-status="fail" method="post">
+                                                            <a class="text-danger font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
+                                                        </form>
+                                                        <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@interviewSchedule.InterviewId" asp-route-status="null" method="post">
+                                                            <a class="text-info font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
+                                                        </form>
                                                     }
-                                                    if (Model.ApplyDetail.IsInterviewPass == true)
+
+                                                </div>
+                                            }
+                                            if (interviewSchedule.IsInterviewPass == false)
+                                            {
+                                                <div>
+                                                    <p class="badge badge-danger my-auto d-block">Failed</p>
+                                                    @if (canEvaluate)
                                                     {
-                                                        <p class="badge badge-success my-auto d-block">Passed</p>
+                                                        <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@interviewSchedule.InterviewId" asp-route-status="pass" method="post">
+                                                            <a class="text-success font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
+                                                        </form>
+                                                        <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@interviewSchedule.InterviewId" asp-route-status="null" method="post">
+                                                            <a class="text-info font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
+                                                        </form>
                                                     }
-                                                    if (Model.ApplyDetail.IsInterviewPass == false)
-                                                    {
-                                                        <p class="badge badge-danger my-auto d-block">Failed</p>
-                                                    }
-                                                }
+                                                </div>
                                             }
                                         }
                                     </td>
-                                }
-                            </tr>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 }

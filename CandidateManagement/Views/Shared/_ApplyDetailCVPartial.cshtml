@@ -6,9 +6,11 @@
 @inject IInterviewScheduleRepository interviewScheduleRepository
 
 @{
-    var applyDetailAbilityList = applyDetailAbilityRepository.GetApplyDetailAbility(Model.ApplyDetail.ApplyDetailId);
-    var applyPositionAbilityList = applyPositionAbilityRepository.GetApplyPositionAbilities(Model.ApplyDetail.Requirement.ApplyPosition.ApplyPositionId);
-    var requiredAbilityList = requiredAbilityRepository.GetRequiredAbilities(Model.ApplyDetail.Requirement.RequirementId);
+    var applyDetailAbilities = applyDetailAbilityRepository.GetApplyDetailAbility(Model.ApplyDetail.ApplyDetailId);
+    var applyPositionAbilities = applyPositionAbilityRepository.GetApplyPositionAbilities(Model.ApplyDetail.Requirement.ApplyPosition.ApplyPositionId);
+    var requiredAbilities = requiredAbilityRepository.GetRequiredAbilities(Model.ApplyDetail.Requirement.RequirementId).Where(ra => !new string[] { "Salary", "WorkedTime"}.Contains(ra.Ability.Note));
+    var salary = requiredAbilityRepository.GetRequiredAbilities(Model.ApplyDetail.Requirement.RequirementId).FirstOrDefault(ra => ra.Ability.Note == "Salary").Ability.AbilityName;
+    var requireWorkedTime = requiredAbilityRepository.GetRequiredAbilities(Model.ApplyDetail.Requirement.RequirementId).FirstOrDefault(ra => ra.Ability.Note == "WorkedTime").Ability.AbilityName;
     int applyDetailAmount = applyDetailRepository.GetApplyDetailsByRequirementId(Model.ApplyDetail.Requirement.RequirementId).Count();
     string avatarPath = FormatHelper.FormatCandidateAvatar(Model.Candidate.AvatarPath);
     bool isExpired = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.ApplyDetail.Requirement.RecruitTo) == 0 ? true : false;
@@ -31,7 +33,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <span>CV ứng viên tải lên: <a href="@(!String.IsNullOrEmpty(Model.ApplyDetail.CvfilePath) ? "~/candidate/cv/" + Model.ApplyDetail.CvfilePath : null)" target="_blank">@(!String.IsNullOrEmpty(Model.ApplyDetail.CvfilePath) ? Model.ApplyDetail.CvfilePath.Substring(Model.ApplyDetail.CvfilePath.IndexOf("_") + 1) : "null")</a></span>
+                <span>CV ứng viên tải lên: <a href="@(!String.IsNullOrEmpty(Model.ApplyDetail.CvfilePath) ? "/candidate/cv/" + Model.ApplyDetail.CvfilePath : null)" target="_blank">@(!String.IsNullOrEmpty(Model.ApplyDetail.CvfilePath) ? Model.ApplyDetail.CvfilePath.Substring(Model.ApplyDetail.CvfilePath.IndexOf("_") + 1) : "null")</a></span>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div>
@@ -58,9 +60,14 @@
                                 <li><i class="@textColorClass fas fa-map-marker-alt"></i> @Model.Candidate.Address</li>
                             </ul>
                             <hr />
+                            <h5 class="@textColorClass">Expected Salary</h5>
+                            <p class="mb-2">@FormatHelper.FormatCurrency(Model.ApplyDetail.ExpectedSalary)</p>
+                            <h5 class="@textColorClass">Worked Time</h5>
+                            <p class="mb-2">@Model.ApplyDetail.WorkedTime year</p>
+                            <hr />
                             <h5 class="@textColorClass">Ability</h5>
                             <ul class="list-unstyled">
-                                @foreach (var applyDetailAbility in applyDetailAbilityList)
+                                @foreach (var applyDetailAbility in applyDetailAbilities)
                                 {
                                     <li>
                                         <p class="mb-0">@applyDetailAbility.Ability.AbilityName</p>
@@ -99,14 +106,6 @@
                                 <li class="mb-2">
                                     <h6 class="@textColorClass mb-0">Position</h6>
                                     <p class="mb-0">@Model.ApplyDetail.Requirement.ApplyPosition.ApplyPositionName</p>
-                                    @*<ul class="list-unstyled">
-                                            @foreach (var applyPositionAbility in applyPositionAbilityList)
-                                            {
-                                                <li>
-                                                    <p class="mb-0">@applyPositionAbility.Ability.AbilityName</p>
-                                                </li>
-                                            }
-                                        </ul>*@
                                 </li>
                                 <li class="mb-2">
                                     <h6 class="@textColorClass mb-0">Language</h6>
@@ -116,11 +115,19 @@
                                     <h6 class="@textColorClass mb-0">Recruit Amount</h6>
                                     @Model.ApplyDetail.Requirement.RecruitAmount (@applyDetailAmount apply)
                                 </li>
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Salary</h6>
+                                    @salary
+                                </li>
+                                <li class="mb-2">
+                                    <h6 class="@textColorClass mb-0">Require Worked Time</h6>
+                                    @requireWorkedTime
+                                </li>
                             </ul>
                             <hr />
                             <h5 class="@textColorClass">Require Ability</h5>
                             <ul class="list-unstyled">
-                                @foreach (var requiredAbility in requiredAbilityList)
+                                @foreach (var requiredAbility in requiredAbilities)
                                 {
                                     <li>
                                         <p class="mb-0">@requiredAbility.Ability.AbilityName</p>

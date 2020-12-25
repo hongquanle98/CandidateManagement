@@ -18,7 +18,6 @@ namespace CandidateManagement.Models
         public decimal ExpectedSalary { get; set; }
         public int WorkedTime { get; set; }
         public bool? IsCvpass { get; set; }
-        public bool? IsInterviewPass { get; set; }
         public string CvfilePath { get; set; }
 
         public Apply Apply { get; set; }

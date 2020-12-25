@@ -11,9 +11,7 @@ namespace CandidateManagement.ViewModels.Home
     public class CandidateViewModel
     {
         [BindProperty]
-        public Candidate Candidate { get; set; }
-        [BindProperty]
-        public IFormFile CVFile { get; set; }
+        public Candidate Candidate { get; set; }        
         [BindProperty]
         public IFormFile Avatar { get; set; }
         [BindProperty]

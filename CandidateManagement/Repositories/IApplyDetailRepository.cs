@@ -17,7 +17,6 @@ namespace CandidateManagement.Repositories
         ApplyDetail GetNewestApplyDetail();
         IEnumerable<ApplyDetail> GetApplyDetailsByRequirementId(int requirementID);
         void UpdateCVStatus(int applyDetailID, string status);
-        void UpdateInterviewStatus(int applyDetailID, string status);
         string GetApplyDetailStatus(int applyDetailID);
     }
 }

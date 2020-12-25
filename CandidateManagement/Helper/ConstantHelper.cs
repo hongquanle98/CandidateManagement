@@ -8,6 +8,11 @@ namespace CandidateManagement.Helper
 {
     public class ConstantHelper
     {
+        public struct Website
+        {
+            public const string Logo = "~/asset/logo.png";
+        }
+
         public struct Company
         {
             public const string Name = "Vin Group";

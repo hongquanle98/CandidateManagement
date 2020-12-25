@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CandidateManagement.ViewModels.Admin
 {
-    public class EvaluateViewModel
+    public class MarkAbilityViewModel
     {
         [BindProperty]
         public IEnumerable<InterviewResult> InterviewResult { get; set; }
@@ -14,8 +14,6 @@ namespace CandidateManagement.ViewModels.Admin
         public InterviewSchedule InterviewSchedule { get; set; }
         [BindProperty]
         public Operator Operator { get; set; }
-        [BindProperty]
-        public bool CanEvaluate { get; set; }
 
         public class ApplyDetailAbility
         {

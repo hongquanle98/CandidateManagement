@@ -75,31 +75,18 @@ namespace CandidateManagement.Repositories
 
                 _context.SaveChanges();
             }
-        }
-        public void UpdateInterviewStatus(int applyDetailID, string status)
-        {
-            ApplyDetail applyDetail = GetApplyDetail(applyDetailID);
-            if (applyDetail != null)
-            {
-                if (status.Equals("pass"))
-                    applyDetail.IsInterviewPass = true;
-                else if (status.Equals("fail"))
-                    applyDetail.IsInterviewPass = false;
-                else
-                    applyDetail.IsInterviewPass = null;
-
-                _context.SaveChanges();
-            }
-        }
+        }        
 
         public string GetApplyDetailStatus(int applyDetailID)
         {
-            var applyDetail = _context.ApplyDetail.FirstOrDefault(ad => ad.ApplyDetailId == applyDetailID);
+            var applyDetail = _context.ApplyDetail.Include(ad => ad.InterviewSchedule).FirstOrDefault(ad => ad.ApplyDetailId == applyDetailID);
+
+            var lastInterview = applyDetail.InterviewSchedule.LastOrDefault();
 
             bool isCVPending = !applyDetail.IsCvpass.HasValue;
             bool isCVPass = !isCVPending && applyDetail.IsCvpass.Value;
-            bool isInterviewPending = !applyDetail.IsInterviewPass.HasValue;
-            bool isInterviewPass = !isInterviewPending && applyDetail.IsInterviewPass.Value;
+            bool isInterviewPending = !lastInterview.IsInterviewPass.HasValue;
+            bool isInterviewPass = !isInterviewPending && lastInterview.IsInterviewPass.Value;
 
             if (isCVPending)
                 return "Chờ duyệt[text-warning]";

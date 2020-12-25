@@ -347,42 +347,6 @@ namespace CandidateManagement.Controllers
             {
                 model.ApplyDetails = applyDetailRepository.GetApplyDetailsByCandidateId(model.Candidate.CandidateId);
             }
-            switch (model.Status)
-            {
-                case "CVPending":
-                    {
-                        model.ApplyDetails = model.ApplyDetails.Where(ad => (ad.IsCvpass == null));
-                        break;
-                    }
-                case "CVPassed":
-                    {
-                        model.ApplyDetails = model.ApplyDetails.Where(ad => (ad.IsCvpass == true));
-                        break;
-                    }
-                case "CVFailed":
-                    {
-                        model.ApplyDetails = model.ApplyDetails.Where(ad => (ad.IsCvpass == false));
-                        break;
-                    }
-                case "InterviewNotScheduled":
-                    {
-                        model.ApplyDetails = model.ApplyDetails.Where(ad => (ad.IsInterviewPass == null
-                                                      && ad.IsCvpass == true));
-                        break;
-                    }
-                case "InterviewPassed":
-                    {
-                        model.ApplyDetails = model.ApplyDetails.Where(ad => (ad.IsInterviewPass == true));
-                        break;
-                    }
-                case "InterviewFailed":
-                    {
-                        model.ApplyDetails = model.ApplyDetails.Where(ad => (ad.IsInterviewPass == false));
-                        break;
-                    }
-                default:
-                    break;
-            }
             return View(model);
         }
         #endregion
@@ -418,7 +382,7 @@ namespace CandidateManagement.Controllers
             return View(model);
         }
         [HttpPost]
-        public async Task<IActionResult> CreateRolePost(CreateRoleViewModel model)
+        public async Task<IActionResult> CreateRole(CreateRoleViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -431,10 +395,10 @@ namespace CandidateManagement.Controllers
                 // Saves the role in the underlying AspNetRoles table
                 IdentityResult result = await roleManager.CreateAsync(identityRole);
 
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("Index", "Home");
-                }
+                //if (result.Succeeded)
+                //{
+                //    return RedirectToAction("Index", "Home");
+                //}
 
                 foreach (IdentityError error in result.Errors)
                 {
@@ -1096,6 +1060,20 @@ namespace CandidateManagement.Controllers
             };
             return View(model);
         }
+        [HttpPost]
+        public IActionResult ApplyDetailList(ApplyDetailListViewModel model)
+        {
+            if (model.FromDate.HasValue && model.ToDate.HasValue)
+            {
+                model.ApplyDetails = applyDetailRepository.GetApplyDetails()
+                        .Where(ad => ad.ApplyDate.Date >= model.FromDate.Value.Date && ad.ApplyDate.Date <= model.ToDate.Value.Date);
+            }
+            else
+            {
+                model.ApplyDetails = applyDetailRepository.GetApplyDetails();
+            }
+            return View(model);
+        }
         #endregion
 
         #region Interview Schedule
@@ -1108,11 +1086,25 @@ namespace CandidateManagement.Controllers
             };
             return View(model);
         }
+        [HttpPost]
+        public IActionResult InterviewScheduleList(InterviewScheduleListViewModel model)
+        {
+            if (model.FromDate.HasValue && model.ToDate.HasValue)
+            {
+                model.InterviewSchedules = interviewScheduleRepository.GetInterviewSchedules()
+                        .Where(ise => ise.InterviewDate.Date >= model.FromDate.Value.Date && ise.InterviewDate.Date <= model.ToDate.Value.Date);
+            }
+            else
+            {
+                model.InterviewSchedules = interviewScheduleRepository.GetInterviewSchedules();
+            }
+            return View(model);
+        }
         [HttpGet]
         public IActionResult MarkAbility(int applyDetailId, int interviewId)
         {
             var applyDetail = applyDetailRepository.GetApplyDetail(applyDetailId);
-            EvaluateViewModel model = new EvaluateViewModel()
+            MarkAbilityViewModel model = new MarkAbilityViewModel()
             {
                 ApplyDetail = applyDetail,
                 InterviewSchedule = interviewScheduleRepository.GetInterviewSchedule(interviewId)
@@ -1126,17 +1118,16 @@ namespace CandidateManagement.Controllers
                 if (irOfOperator.Any())
                 {
                     model.Operator = signedInOperator;
-                    model.CanEvaluate = true;
                 }
             }
             model.InterviewResult = interviewResultRepository.GetInterviewResultByInterviewIDAndOperatorID(interviewId, signedInOperator.OperatorId);
 
             var applyDetailAbilities = applyDetailAbilityRepository.GetApplyDetailAbility(applyDetailId);
 
-            model.ApplyDetailAbilities = new List<EvaluateViewModel.ApplyDetailAbility>();
+            model.ApplyDetailAbilities = new List<MarkAbilityViewModel.ApplyDetailAbility>();
             foreach (var applyDetailAbility in applyDetailAbilities)
             {
-                var ability = new EvaluateViewModel.ApplyDetailAbility
+                var ability = new MarkAbilityViewModel.ApplyDetailAbility
                 {
                     ApplyDetailAbilityID = applyDetailAbility.ApplyDetailAbilityId,
                     AbilityName = applyDetailAbility.Ability.AbilityName,
@@ -1158,7 +1149,7 @@ namespace CandidateManagement.Controllers
             return PartialView("_MarkAbilityPartial", model);
         }
         [HttpPost]
-        public IActionResult MarkAbility(EvaluateViewModel model)
+        public IActionResult MarkAbility(MarkAbilityViewModel model)
         {
             try
             {
@@ -1186,15 +1177,15 @@ namespace CandidateManagement.Controllers
         {
             if (status.Equals("pass"))
             {
-                applyDetailRepository.UpdateInterviewStatus(id, "pass");
+                interviewScheduleRepository.UpdateInterviewStatus(id, "pass");
             }
             else if (status.Equals("fail"))
             {
-                applyDetailRepository.UpdateInterviewStatus(id, "fail");
+                interviewScheduleRepository.UpdateInterviewStatus(id, "fail");
             }
             else
             {
-                applyDetailRepository.UpdateInterviewStatus(id, "null");
+                interviewScheduleRepository.UpdateInterviewStatus(id, "null");
             }
             return Redirect(Request.Headers["Referer"].ToString());
         }

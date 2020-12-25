@@ -14,9 +14,9 @@ namespace CandidateManagement.Controllers
     [AllowAnonymous]
     public class AccountController : Controller
     {
+        #region dependency injection
         private readonly ICandidateRepository candidateRepository;
         private readonly IOperatorRepository operatorRepository;
-        #region dependency injection
         private readonly UserManager<IdentityUser> userManager;
         private readonly SignInManager<IdentityUser> signInManager;
         private readonly ILogger<AccountController> logger;
@@ -353,6 +353,7 @@ namespace CandidateManagement.Controllers
                             OperatorName = model.OperatorName,
                             UserId = user.Id
                         };
+                        operatorRepository.Add(op);
                         await signInManager.SignInAsync(user, isPersistent: false);
                         return RedirectToAction("Index", "Home");
                     }
@@ -360,8 +361,7 @@ namespace CandidateManagement.Controllers
                     {
                         await userManager.AddToRoleAsync(user, "Candidate");
                         return RedirectToAction("InsertCandidate", "Home", new { userId = user.Id });
-                    }                   
-                    
+                    }
                 }
 
                 foreach (var error in result.Errors)

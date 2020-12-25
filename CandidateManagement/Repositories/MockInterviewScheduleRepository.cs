@@ -29,6 +29,22 @@ namespace CandidateManagement.Repositories
             _context.SaveChanges();
         }
 
+        public void UpdateInterviewStatus(int interviewID, string status)
+        {
+            InterviewSchedule interviewSchedule = GetInterviewSchedule(interviewID);
+            if (interviewSchedule != null)
+            {
+                if (status.Equals("pass"))
+                    interviewSchedule.IsInterviewPass = true;
+                else if (status.Equals("fail"))
+                    interviewSchedule.IsInterviewPass = false;
+                else
+                    interviewSchedule.IsInterviewPass = null;
+
+                _context.SaveChanges();
+            }
+        }
+
         public InterviewSchedule GetInterviewSchedule(int interviewScheduleId)
         {
             return _context.InterviewSchedule.FirstOrDefault(ise => ise.InterviewId == interviewScheduleId);
@@ -38,6 +54,8 @@ namespace CandidateManagement.Repositories
         {
             return _context.InterviewSchedule
                 .Include(ts => ts.ApplyDetail)
+                .Include(ts => ts.InterviewResult)
+                .ThenInclude(ts => ts.Operator)
                 .Where(ts => ts.ApplyDetailId == applyDetailID);
         }
 

@@ -3,6 +3,7 @@
 @inject IInterviewResultRepository interviewResultRepository
 @{
     int recruitTime = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.ApplyDetail.Requirement.RecruitTo);
+    var lastInterview = interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).LastOrDefault();
 }
 <td class="text-center">
     @{
@@ -35,57 +36,59 @@
             }
             else
             {
-                if (Model.ApplyDetail.IsInterviewPass == null)
+                var lastInterviewDate = FormatHelper.FormatDate(lastInterview.InterviewDate.Date);
+                if (lastInterview.IsInterviewPass == null)
                 {
                     bool hasMarkedAbility = false;
                     var interviewSchedule = interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).FirstOrDefault();
+
                     if (interviewSchedule != null)
                     {
-                        hasMarkedAbility = !interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Any(ir => ir.Point == 0);
+                        hasMarkedAbility = !interviewResultRepository.GetInterviewResultByInterviewID(lastInterview.InterviewId).Any(ir => ir.Point == 0);
                     }
                     <div>
-                        <p class="badge badge-primary my-auto d-block">@(hasMarkedAbility ? "Not Evaluate" : "Not Mark Ability")</p>
-                        <a class="text-primary font-weight-bold small d-block" target="_blank" asp-controller="Admin" asp-action="ScheduleHistory" asp-route-id="@Model.ApplyDetail.ApplyDetailId">@FormatHelper.FormatDate(interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).LastOrDefault().InterviewDate.Date)</a>
-                        @if (Model.CanEvaluate)
+                        <p class="badge badge-primary my-auto d-block">@(hasMarkedAbility ? "Not Evaluate" : "Not Mark All Ability")</p>
+                        <a class="text-primary font-weight-bold small d-block" target="_blank" asp-controller="Admin" asp-action="ScheduleHistory" asp-route-id="@Model.ApplyDetail.ApplyDetailId">@lastInterviewDate</a>
+                        @if (Model.CanEvaluate && hasMarkedAbility)
                         {
-                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="pass" method="post">
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@lastInterview.InterviewId" asp-route-status="pass" method="post">
                                 <a class="text-success font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
                             </form>
-                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="fail" method="post">
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@lastInterview.InterviewId" asp-route-status="fail" method="post">
                                 <a class="text-danger font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
                             </form>
                         }
 
                     </div>
                 }
-                if (Model.ApplyDetail.IsInterviewPass == true)
+                if (lastInterview.IsInterviewPass == true)
                 {
                     <div>
                         <p class="badge badge-success my-auto d-block">Passed</p>
-                        <a class="text-primary font-weight-bold small d-block" target="_blank" asp-controller="Admin" asp-action="ScheduleHistory" asp-route-id="@Model.ApplyDetail.ApplyDetailId">@FormatHelper.FormatDate(interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).LastOrDefault().InterviewDate.Date)</a>
+                        <a class="text-primary font-weight-bold small d-block" target="_blank" asp-controller="Admin" asp-action="ScheduleHistory" asp-route-id="@Model.ApplyDetail.ApplyDetailId">@lastInterviewDate</a>
                         @if (Model.CanEvaluate)
                         {
-                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="fail" method="post">
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@lastInterview.InterviewId" asp-route-status="fail" method="post">
                                 <a class="text-danger font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Fail</a>
                             </form>
-                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="null" method="post">
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@lastInterview.InterviewId" asp-route-status="null" method="post">
                                 <a class="text-info font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
                             </form>
                         }
 
                     </div>
                 }
-                if (Model.ApplyDetail.IsInterviewPass == false)
+                if (lastInterview.IsInterviewPass == false)
                 {
                     <div>
                         <p class="badge badge-danger my-auto d-block">Failed</p>
-                        <a class="text-primary font-weight-bold small d-block" target="_blank" asp-controller="Admin" asp-action="ScheduleHistory" asp-route-id="@Model.ApplyDetail.ApplyDetailId">@FormatHelper.FormatDate(interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(Model.ApplyDetail.ApplyDetailId).LastOrDefault().InterviewDate.Date)</a>
+                        <a class="text-primary font-weight-bold small d-block" target="_blank" asp-controller="Admin" asp-action="ScheduleHistory" asp-route-id="@Model.ApplyDetail.ApplyDetailId">@lastInterviewDate</a>
                         @if (Model.CanEvaluate)
                         {
-                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="pass" method="post">
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@lastInterview.InterviewId" asp-route-status="pass" method="post">
                                 <a class="text-success font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Pass</a>
                             </form>
-                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@Model.ApplyDetail.ApplyDetailId" asp-route-status="null" method="post">
+                            <form class="d-inline" asp-controller="Admin" asp-action="UpdateInterviewStatus" asp-route-id="@lastInterview.InterviewId" asp-route-status="null" method="post">
                                 <a class="text-info font-weight-bold small" href="#" onclick="this.parentNode.submit(); return false;">Reset</a>
                             </form>
                         }

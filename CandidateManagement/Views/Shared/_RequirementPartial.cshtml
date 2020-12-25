@@ -8,7 +8,7 @@
 @{
     int recruitTime = ConvertHelper.ConvertToTimeSpan(DateTime.Now, Model.RecruitTo);
     bool isSignedIn = SignInManager.IsSignedIn(User);
-    bool isAdmin = isSignedIn && User.IsInRole("Admin");
+    bool isAdmin = isSignedIn && !User.IsInRole("Candidate");
 
     var candidateId = 0;
     if (isSignedIn && !isAdmin)
