@@ -2,6 +2,7 @@
 @inject IInterviewResultRepository interviewResultRepository
 @inject IOperatorRepository operatorRepository
 @inject IInterviewScheduleRepository interviewScheduleRepository
+@inject IApplyDetailAbilityRepository applyDetailAbilityRepository
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @{
@@ -37,6 +38,7 @@
                             {
                                 bool canMarkAbility = false;
                                 var operators = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Select(ir => ir.Operator).GroupBy(o => o.OperatorId).Select(o => o.First());
+                                var applyDetailAbilities = applyDetailAbilityRepository.GetApplyDetailAbility(interviewSchedule.ApplyDetailId).OrderBy(ada => ada.ApplyDetailAbilityId);
                                 var signedInOperator = operatorRepository.GetOperator(UserManager.GetUserId(User));
                                 if (signedInOperator != null)
                                 {
@@ -52,14 +54,47 @@
                                 <tr>
                                     <td>@FormatHelper.FormatDate(interviewSchedule.InterviewDate)</td>
                                     <td>@string.Format("{0:hh\\:mm}", interviewSchedule.InterviewTime)</td>
-                                    <td>
-                                        @foreach (var op in operators)
-                                        {
-                                            bool hasMarkedAllAbility = !interviewResultRepository.GetInterviewResultByInterviewIDAndOperatorID(interviewSchedule.InterviewId, op.OperatorId).Where(ir => ir.Point == 0).Any();
-                                            <span class="badge @(hasMarkedAllAbility ? "badge-dark" : "badge-light")">
-                                                @op.OperatorName
-                                            </span>
-                                        }
+                                    <td class="text-nowrap">
+                                        <table class="table table-bordered table-hover table-sm table-in-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="font-weight-normal"></th>
+                                                    <th class="font-weight-normal">Candidate</th>
+                                                    @if (operators.Count() > 0)
+                                                    {
+                                                        foreach (var op in operators)
+                                                        {
+                                                            <th class="@(signedInOperator != null && signedInOperator.OperatorId == op.OperatorId ? "" : "font-weight-normal")">@op.OperatorName</th>
+                                                        }
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var applyDetailAbility in applyDetailAbilities)
+                                                {
+                                                    <tr>
+                                                        <td>@applyDetailAbility.Ability.AbilityName</td>
+                                                        <td>
+                                                            <div class="progress" style="height: 12px;">
+                                                                <div class="progress-bar bg-info" role="progressbar" style="width: @(applyDetailAbility.Point * 10)%;">@applyDetailAbility.Point</div>
+                                                            </div>
+                                                        </td>
+                                                        @if (operators.Count() > 0)
+                                                        {
+                                                            foreach (var op in operators)
+                                                            {
+                                                                var interviewResult = op.InterviewResult.FirstOrDefault(ir => ir.ApplyDetailAbilityId == applyDetailAbility.ApplyDetailAbilityId);
+                                                                <th>
+                                                                    <div class="progress" style="height: 12px;">
+                                                                        <div class="progress-bar bg-info" role="progressbar" style="width: @(interviewResult.Point * 10)%;">@interviewResult.Point</div>
+                                                                    </div>
+                                                                </th>
+                                                            }
+                                                        }
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
                                     </td>
                                     <td class="text-center">
                                         @if (interviewSchedule.IsEmailSent == true)
@@ -84,7 +119,7 @@
                                     </td>
                                     <td class="text-center">
                                         @{
-                                            
+
                                             if (interviewSchedule.IsInterviewPass == null)
                                             {
                                                 <div>

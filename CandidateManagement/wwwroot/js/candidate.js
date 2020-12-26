@@ -7,7 +7,7 @@
 
     if (!$.fn.DataTable.isDataTable('.table')) {
         //datatable with button, column visible
-        $('.table').DataTable({
+        $('.table:not(.table-in-table)').DataTable({
             dom: 'Bfrtip',
             buttons: [
                 {

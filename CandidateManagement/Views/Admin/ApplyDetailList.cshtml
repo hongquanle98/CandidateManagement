@@ -53,8 +53,6 @@
                         <th scope="col">Candidate Name</th>
                         <th scope="col">Requirement</th>
                         <th scope="col">Recruit Amount</th>
-                        <th scope="col">Expected Salary</th>
-                        <th scope="col">Worked Time</th>
                         <th scope="col">Operator Mark</th>
                         <th scope="col">CV</th>
                         <th scope="col">Interview</th>
@@ -64,45 +62,62 @@
                     @foreach (var applyDetail in Model.ApplyDetails)
                     {
                         var candidate = applyDetail.Apply.Candidate;
-                        var applyDetailAbilities = applyDetailAbilityRepository.GetApplyDetailAbility(applyDetail.ApplyDetailId);
+                        var applyDetailAbilities = applyDetailAbilityRepository.GetApplyDetailAbility(applyDetail.ApplyDetailId).OrderBy(ada => ada.ApplyDetailAbilityId);
                         var interviewSchedule = interviewScheduleRepository.GetInterviewScheduleByApplyDetailId(applyDetail.ApplyDetailId).LastOrDefault();
                         bool canEvaluate = false;
+                        var operators = new List<Operator>();
+                        var signedInOperator = operatorRepository.GetOperator(UserManager.GetUserId(User));
                         if (interviewSchedule != null)
                         {
                             canEvaluate = !interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Any(ir => ir.Point == 0) && User.IsInRole("Manager");
+                            operators = interviewResultRepository.GetInterviewResultByInterviewID(interviewSchedule.InterviewId).Select(ir => ir.Operator).GroupBy(o => o.OperatorId).Select(o => o.First()).ToList();
                         }
                         <tr>
                             <td>@FormatHelper.FormatDate(applyDetail.ApplyDate)</td>
                             <td>@candidate.FullName</td>
                             <td><a target="_blank" asp-controller="Home" asp-action="RequirementDetail" asp-route-id="@applyDetail.RequirementId">@applyDetail.Requirement.Title</a></td>
                             <td>@applyDetail.Requirement.RecruitAmount employee</td>
-                            <td>@FormatHelper.FormatCurrency(applyDetail.ExpectedSalary)</td>
-                            <td>@applyDetail.WorkedTime year</td>
                             <td class="text-nowrap">
-                                <ul class="list-unstyled">
-                                    @foreach (var applyDetailAbility in applyDetailAbilities)
-                                    {
-                                        <li class="d-block">
-                                            <div class="d-inline-block">
-                                                <p class="mb-0" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100px;">@applyDetailAbility.Ability.AbilityName</p>
-                                                <div class="progress" style="height: 12px; width: 100px;">
-                                                    <div class="progress-bar bg-info" role="progressbar" style="width: @(applyDetailAbility.Point * 10)%;">@applyDetailAbility.Point</div>
-                                                </div>
-                                            </div>
-
-                                            @foreach (var interviewResult in applyDetailAbility.InterviewResult.OrderBy(ir => ir.OperatorId))
+                                <table class="table table-bordered table-hover table-sm table-in-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="font-weight-normal"></th>
+                                            <th class="font-weight-normal">Candidate</th>
+                                            @if (operators.Count() > 0)
                                             {
-                                                <div class="d-inline-block">
-                                                    <p class="mb-0" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; width: 100px;">@interviewResult.Operator.OperatorName</p>
-                                                    <div class="progress" style="height: 12px; width: 100px;">
-                                                        <div class="progress-bar bg-info" role="progressbar" style="width: @(interviewResult.Point * 10)%;">@interviewResult.Point</div>
-                                                    </div>
-                                                </div>
-
+                                                foreach (var op in operators)
+                                                {
+                                                    <th class="@(signedInOperator != null && signedInOperator.OperatorId == op.OperatorId ? "" : "font-weight-normal")">@op.OperatorName</th>
+                                                }
                                             }
-                                        </li>
-                                    }
-                                </ul>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var applyDetailAbility in applyDetailAbilities)
+                                        {
+                                            <tr>
+                                                <td>@applyDetailAbility.Ability.AbilityName</td>
+                                                <td>
+                                                    <div class="progress" style="height: 12px;">
+                                                        <div class="progress-bar bg-info" role="progressbar" style="width: @(applyDetailAbility.Point * 10)%;">@applyDetailAbility.Point</div>
+                                                    </div>
+                                                </td>
+                                                @if (operators.Count() > 0)
+                                                {
+                                                    foreach (var op in operators)
+                                                    {
+                                                        var interviewResult = op.InterviewResult.FirstOrDefault(ir => ir.ApplyDetailAbilityId == applyDetailAbility.ApplyDetailAbilityId);
+                                                        <th>
+                                                            <div class="progress" style="height: 12px;">
+                                                                <div class="progress-bar bg-info" role="progressbar" style="width: @(interviewResult.Point * 10)%;">@interviewResult.Point</div>
+                                                            </div>
+                                                        </th>
+                                                    }
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             </td>
                             @await Html.PartialAsync("_ApplyDetailStatusPartial", new ApplyDetailCVViewModel() { Candidate = candidate, ApplyDetail = applyDetail, CanEvaluate = canEvaluate })
                         </tr>
